@@ -5,9 +5,12 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 7, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 8, 2026-07-30)
 
-Además de todo lo de la Iteración 6, se completó un **rediseño visual
+La Iteración 8 cambió la navegación de nav horizontal (pills) a sidebar
+izquierdo fijo, con drawer off-canvas en pantallas <=900px (hamburguesa +
+overlay). Ver esa iteración para el detalle. Además de todo lo de la
+Iteración 6, se completó un **rediseño visual
 completo** (Iteración 7: paleta tipo dashboard fintech, dark mode
 conservado y mejorado). Ver esa iteración para el detalle. No cambió
 ningún endpoint, query, mutation ni regla de negocio — solo CSS Modules,
@@ -563,3 +566,35 @@ token `--color-advertencia` (naranja) preparado para ese caso, pero no se
 inventó un estado que el backend no tiene. Si en el futuro se agrega esa
 granularidad al backend, ya está el token listo para usarlo sin tocar
 `index.css` de nuevo.
+
+## Iteración 8 — 2026-07-30
+
+**Qué se hizo:** a pedido del usuario, la navegación de `Layout.tsx` pasó
+de un nav horizontal (pills, Iteración 7) a un **sidebar fijo a la
+izquierda** con un ícono SVG inline por sección (mismo patrón sin
+dependencias nuevas que el resto del rediseño). Cambios:
+
+- Sidebar (240px, fondo `--color-superficie`, borde derecho) con la
+  marca/logo arriba y los links de nav debajo, en vez de en la topbar.
+- Topbar simplificada: ahora solo tiene el botón de menú (mobile/tablet)
+  y la info de usuario + logout — la marca se movió al sidebar.
+- **Responsive con drawer**: en pantallas `<= 900px` (mobile y tablet en
+  vertical) el sidebar pasa a `position: fixed` fuera de pantalla
+  (`translateX(-100%)`) y se abre con un botón de hamburguesa que agrega
+  la clase `.sidebarAbierto` (transform a 0) más un overlay semi-transparente
+  que cierra el menú al tocarlo. Arriba de 900px el sidebar queda siempre
+  visible y el botón de hamburguesa se oculta. Se eligió 900px como corte
+  (no 768px) para que tablets en vertical, que no tienen mucho margen
+  horizontal, también usen el drawer en vez de convivir con un sidebar
+  angosto.
+- Cada `NavLink` cierra el drawer al navegar (`onClick={cerrarMenu}`), para
+  no dejarlo abierto tapando la página siguiente en mobile.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (9/9) en verde sin tocar ningún spec — los tests ya
+buscaban los links por `getByRole("link", { name: ... })`, que sigue
+funcionando igual con `NavLink` dentro de un `<aside>`. Revisión visual
+manual (capturas Playwright, no versionadas) en desktop (1400px, claro y
+oscuro), tablet (820px, drawer) y mobile (390px, drawer cerrado y
+abierto con overlay): sin problemas de contraste ni de recorte en
+ninguno.
