@@ -5,9 +5,13 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 13, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 14, 2026-07-30)
 
-La Iteración 13 agregó una sección "Reclamos" (rol USUARIO) que **todavía
+La Iteración 14 completó el panel de administrador: sesiones en vivo
+(auto-refresh), usuarios con vehículos anidados, y ajuste manual de
+saldo (monto con signo + motivo). Requirió backend nuevo en
+`servidor-estacionamiento` (ver su propio `PROGRESO.md`). La Iteración 13
+agregó una sección "Reclamos" (rol USUARIO) que **todavía
 no tiene backend**: el formulario funciona pero el dato se pierde al
 recargar la página (a propósito, ver esa iteración — falta decidir a
 dónde va y conectarlo). La Iteración 12 eliminó por completo el backend de líneas de colectivo:
@@ -795,3 +799,57 @@ de verdad (endpoint nuevo en `servidor-estacionamiento`, servicio
 externo, email, etc.) y conectar el formulario ahí. Hasta entonces, todo
 lo que se carga acá se pierde al recargar la página — comportamiento
 esperado, no un bug.
+
+## Iteración 14 — 2026-07-30
+
+**Qué se hizo:** panel de administrador completo, con tres capacidades
+nuevas pedidas explícitamente por el usuario en `/admin` (rol
+ADMINISTRADOR):
+
+1. **Sesiones en vivo** (`SeccionSesionesEnVivo`): solo sesiones con
+   `estado=ACTIVA`, con auto-refresh cada 5s (`refetchInterval` de
+   react-query) — no hace falta recargar la página a mano para ver
+   sesiones nuevas. Indicador visual: un punto verde con animación de
+   pulso (1.6s) al lado del título.
+2. **Usuarios** (`SeccionUsuarios`): todos los usuarios con sus
+   vehículos anidados (chips patente+tipo), saldo (rojo si negativo) y
+   roles. Cada tarjeta tiene un botón "Ajustar saldo" que abre un
+   formulario inline (mismo patrón in-place que ya se usaba para
+   editar líneas antes de que se eliminaran) con **monto con signo**
+   (positivo acredita, negativo debita) y **motivo obligatorio** —
+   decisión de diseño confirmada con el usuario antes de escribir
+   código (la alternativa descartada era "solo acreditar, sin motivo").
+3. Se mantuvieron "Transferir titularidad" e "Historial de todas las
+   sesiones" (renombrada así, antes "Todas las sesiones", para
+   distinguirla de la nueva sección "en vivo").
+
+**Backend nuevo requerido** (`servidor-estacionamiento`, commit aparte
+en ese repo — ver su `PROGRESO.md`):
+- `GET /api/v1/usuarios/admin`: todos los usuarios + vehículos anidados
+  (`UsuarioAdminRespuesta`), armado en el controller para no invertir
+  la dependencia entre módulos (vehiculos ya depende de usuarios).
+- `PUT /api/v1/usuarios/admin/{id}/saldo`: `Usuario.ajustarSaldo(monto)`
+  nuevo (con signo, distinto de `debitarSaldo` que siempre resta y es
+  el que usa el cobro de sesiones). Logueado con quién hizo el ajuste,
+  a quién, cuánto y por qué.
+- `GET /api/v1/sesiones/admin?estado=ACTIVA`: el listado paginado ya
+  existía: se le agregó un filtro opcional por estado.
+
+**Frontend:**
+- `api/usuarios.ts`: `listarUsuariosAdmin()`, `ajustarSaldo(id, datos)`.
+  Tipos nuevos `UsuarioAdminRespuesta` (con `vehiculos` anidados) y
+  `AjusteSaldoSolicitud` en `tipos/usuario.ts`.
+- `api/sesiones.ts`: `ParametrosPaginacion` gana `estado?: EstadoSesion`.
+- **Modo demo**: usuarios ficticios nuevos (`juan.perez`, `maria.gomez`,
+  `inspector.demo`) con saldo/vehículos propios en `fixturesDemo.ts`,
+  más el usuario "propio" (id 1) armado dinámicamente desde
+  `saldoDemo`/`vehiculosDemo`/la sesión actual, para que el ajuste de
+  saldo se vea reflejado también en el dashboard del usuario logueado.
+  Fixture de `PUT /usuarios/admin/{id}/saldo` y filtro `estado` en
+  `GET /sesiones/admin`.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (8/8) en verde. Revisión visual manual completa del
+panel (las 4 secciones) en claro y oscuro, y el flujo end-to-end de
+ajuste de saldo (-$1.500,00 → +300 → -$1.200,00, con toast de
+confirmación).
