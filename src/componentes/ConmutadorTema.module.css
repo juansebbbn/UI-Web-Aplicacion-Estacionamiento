@@ -1,13 +1,37 @@
-.boton {
+.grupo {
   position: fixed;
-  bottom: 12px;
-  left: 12px;
-  z-index: 900;
-  padding: 6px 10px;
-  border: 1px solid var(--color-borde-input);
-  border-radius: 6px;
-  background: var(--color-fondo);
-  color: var(--color-texto);
+  bottom: 16px;
+  right: 16px;
+  z-index: 950;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-texto-secundario);
   cursor: pointer;
-  font-size: 0.85rem;
+}
+
+.opcion:hover {
+  background: var(--color-superficie-alterna);
+  color: var(--color-texto);
+}
+
+.opcionActiva,
+.opcionActiva:hover {
+  background: var(--color-primario);
+  color: var(--color-primario-texto);
 }
