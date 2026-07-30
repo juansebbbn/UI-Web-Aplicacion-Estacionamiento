@@ -25,6 +25,11 @@
 .sidebar {
   width: 240px;
   flex-shrink: 0;
+  align-self: flex-start;
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -98,6 +103,15 @@
   background: var(--color-primario-hover);
 }
 
+.sidebarFooter {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-borde);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .overlay {
   display: none;
 }
@@ -141,18 +155,18 @@
   background: var(--color-superficie-alterna);
 }
 
-.usuario {
+.encabezadoAcciones {
   display: flex;
   align-items: center;
-  gap: 14px;
   margin-left: auto;
 }
 
 .usuarioInfo {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   line-height: 1.25;
+  padding: 0 10px;
 }
 
 .usuarioNombre {
@@ -179,6 +193,7 @@
 .botonSalir:hover {
   border-color: var(--color-borde-input);
   color: var(--color-texto);
+  background: var(--color-superficie-alterna);
 }
 
 .contenido {

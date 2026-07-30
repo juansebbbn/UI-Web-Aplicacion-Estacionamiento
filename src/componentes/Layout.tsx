@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import type { NavLinkRenderProps } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
 import { estaEnModoDemo } from "../api/modoDemo";
+import { ConmutadorTema } from "./ConmutadorTema";
 import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "../tipos/roles";
 import estilos from "./Layout.module.css";
 
@@ -148,6 +149,18 @@ export function Layout() {
               Líneas de colectivo
             </NavLink>
           </nav>
+
+          <div className={estilos.sidebarFooter}>
+            <div className={estilos.usuarioInfo}>
+              <span className={estilos.usuarioNombre}>{usuario?.username}</span>
+              <span className={estilos.roles}>
+                {usuario?.roles.map((rol) => rol.replace("ROLE_", "")).join(" · ")}
+              </span>
+            </div>
+            <button type="button" className={estilos.botonSalir} onClick={manejarCerrarSesion}>
+              Cerrar sesión
+            </button>
+          </div>
         </aside>
 
         {menuAbierto && (
@@ -169,16 +182,8 @@ export function Layout() {
             >
               <IconoMenu />
             </button>
-            <div className={estilos.usuario}>
-              <div className={estilos.usuarioInfo}>
-                <span className={estilos.usuarioNombre}>{usuario?.username}</span>
-                <span className={estilos.roles}>
-                  {usuario?.roles.map((rol) => rol.replace("ROLE_", "")).join(" · ")}
-                </span>
-              </div>
-              <button type="button" className={estilos.botonSalir} onClick={manejarCerrarSesion}>
-                Cerrar sesión
-              </button>
+            <div className={estilos.encabezadoAcciones}>
+              <ConmutadorTema variante="inline" />
             </div>
           </header>
           <main className={estilos.contenido}>

@@ -1,14 +1,18 @@
 .grupo {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-superficie-alterna);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+}
+
+.flotante {
   position: fixed;
   bottom: 16px;
   right: 16px;
   z-index: 950;
-  display: flex;
-  gap: 2px;
-  padding: 4px;
   background: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: 999px;
   box-shadow: var(--sombra-tarjeta);
 }
 
@@ -28,6 +32,10 @@
 .opcion:hover {
   background: var(--color-superficie-alterna);
   color: var(--color-texto);
+}
+
+.flotante .opcion:hover {
+  background: var(--color-fondo);
 }
 
 .opcionActiva,

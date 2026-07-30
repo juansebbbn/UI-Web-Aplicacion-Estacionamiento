@@ -43,15 +43,23 @@ const ICONO: Record<Tema, ComponentType> = {
   oscuro: IconoOscuro,
 };
 
-// Segmented control fijo (monta una vez en App.tsx, visible en toda la app
-// incluyendo login/registro): tres opciones explicitas en vez de un botón
-// que cicla, para que "claro" y "oscuro" sean un toggle real y no haya que
-// adivinar en qué paso del ciclo está el tema actual.
-export function ConmutadorTema() {
+interface ConmutadorTemaProps {
+  // "flotante" (default): pill fija abajo a la derecha, para paginas sin
+  // Layout (login/registro/lineas, ver LayoutPublico en App.tsx).
+  // "inline": sin position fija, para insertarlo en la topbar de Layout.
+  variante?: "flotante" | "inline";
+}
+
+// Segmented control: tres opciones explicitas en vez de un botón que cicla,
+// para que "claro" y "oscuro" sean un toggle real y no haya que adivinar en
+// qué paso del ciclo está el tema actual.
+export function ConmutadorTema({ variante = "flotante" }: ConmutadorTemaProps) {
   const { tema, setTema } = useTema();
 
+  const claseGrupo = variante === "flotante" ? `${estilos.grupo} ${estilos.flotante}` : estilos.grupo;
+
   return (
-    <div className={estilos.grupo} role="radiogroup" aria-label="Tema de la aplicación">
+    <div className={claseGrupo} role="radiogroup" aria-label="Tema de la aplicación">
       {(Object.keys(ETIQUETA) as Tema[]).map((opcion) => {
         const Icono = ICONO[opcion];
         const activo = tema === opcion;
