@@ -11,94 +11,172 @@
  * resuelve en un solo lugar en vez de duplicar un bloque
  * `@media (prefers-color-scheme: dark)` en cada módulo.
  *
+ * Paleta inspirada en dashboards fintech (fondo neutro, acento azul, verde/rojo
+ * para estados): --color-fondo es el fondo de página, --color-superficie es el
+ * fondo de las tarjetas (siempre un tono por encima del fondo). --color-exito/
+ * --color-peligro/--color-advertencia son para texto o íconos sueltos; las
+ * variantes -fondo/-texto/-borde son para banners/badges con tinte de color.
+ *
  * `[data-theme]` lo pone useTema.ts en <html> cuando el usuario elige modo
  * claro/oscuro a mano; sin el atributo (modo "sistema") manda la media query.
  */
 :root {
   color-scheme: light dark;
   font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "tnum" 1;
 
-  --color-texto: #1a1a1a;
-  --color-fondo: #ffffff;
-  --color-borde: #e2e2e2;
-  --color-borde-input: #999999;
-  --color-primario: #1a5fb4;
+  --color-texto: #12141a;
+  --color-texto-secundario: #6b7280;
+  --color-fondo: #f3f5f9;
+  --color-superficie: #ffffff;
+  --color-superficie-alterna: #f8f9fc;
+  --color-borde: #e4e7ee;
+  --color-borde-input: #c7cbd6;
+
+  --color-primario: #2f6fed;
+  --color-primario-hover: #255dd1;
   --color-primario-texto: #ffffff;
-  --color-peligro: #c01c28;
-  --color-exito: #2ec27e;
-  --color-exito-fondo: #e6f7ee;
-  --color-exito-texto: #14532d;
-  --color-exito-borde: #b7e4c7;
-  --color-error-fondo: #fdecea;
-  --color-error-texto: #611a15;
-  --color-error-borde: #f5c6c0;
-  --color-inactivo-fondo: #f3f3f3;
-  --color-inactivo-texto: #444444;
-  --color-inactivo-borde: #dddddd;
+  --color-primario-tenue: #eaf1ff;
+
+  --color-peligro: #d1293d;
+  --color-exito: #1c9a6c;
+  --color-exito-fondo: #e7f7f0;
+  --color-exito-texto: #0f6b46;
+  --color-exito-borde: #b8e6d3;
+
+  --color-error-fondo: #fdecee;
+  --color-error-texto: #8c1f2e;
+  --color-error-borde: #f4c2c9;
+
+  --color-advertencia: #b5750a;
+  --color-advertencia-fondo: #fdf1dc;
+  --color-advertencia-texto: #7a4d05;
+  --color-advertencia-borde: #f2dba6;
+
+  --color-inactivo-fondo: #eef0f4;
+  --color-inactivo-texto: #565c66;
+  --color-inactivo-borde: #dde0e6;
+
+  --radio-tarjeta: 16px;
+  --radio-control: 10px;
+  --sombra-tarjeta: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --sombra-tarjeta-hover: 0 2px 6px rgba(16, 24, 40, 0.06), 0 6px 16px rgba(16, 24, 40, 0.08);
+  --transicion: 180ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-texto: #e5e5e5;
-    --color-fondo: #17181c;
-    --color-borde: #333333;
-    --color-borde-input: #666666;
-    --color-primario: #5b9bd9;
-    --color-primario-texto: #0a0a0a;
-    --color-peligro: #ff6b6b;
-    --color-exito: #4fd699;
-    --color-exito-fondo: #123a24;
-    --color-exito-texto: #b7e4c7;
-    --color-exito-borde: #14532d;
-    --color-error-fondo: #3a1a17;
-    --color-error-texto: #f5c6c0;
-    --color-error-borde: #611a15;
-    --color-inactivo-fondo: #24242a;
-    --color-inactivo-texto: #cccccc;
-    --color-inactivo-borde: #3a3a42;
+    --color-texto: #eef1f6;
+    --color-texto-secundario: #8b93a7;
+    --color-fondo: #0b0d12;
+    --color-superficie: #14161d;
+    --color-superficie-alterna: #191c25;
+    --color-borde: #262933;
+    --color-borde-input: #3a3e4a;
+
+    --color-primario: #5b8dfb;
+    --color-primario-hover: #7aa2ff;
+    --color-primario-texto: #0b0d12;
+    --color-primario-tenue: #182544;
+
+    --color-peligro: #ff6b7a;
+    --color-exito: #34d399;
+    --color-exito-fondo: #0f2b22;
+    --color-exito-texto: #86efc4;
+    --color-exito-borde: #1c5c43;
+
+    --color-error-fondo: #351319;
+    --color-error-texto: #ffb0ba;
+    --color-error-borde: #6b232e;
+
+    --color-advertencia: #f5b93d;
+    --color-advertencia-fondo: #332405;
+    --color-advertencia-texto: #ffd479;
+    --color-advertencia-borde: #6b4d10;
+
+    --color-inactivo-fondo: #1b1e26;
+    --color-inactivo-texto: #9aa1b0;
+    --color-inactivo-borde: #2c303b;
+
+    --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --sombra-tarjeta-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.35);
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-texto: #e5e5e5;
-  --color-fondo: #17181c;
-  --color-borde: #333333;
-  --color-borde-input: #666666;
-  --color-primario: #5b9bd9;
-  --color-primario-texto: #0a0a0a;
-  --color-peligro: #ff6b6b;
-  --color-exito: #4fd699;
-  --color-exito-fondo: #123a24;
-  --color-exito-texto: #b7e4c7;
-  --color-exito-borde: #14532d;
-  --color-error-fondo: #3a1a17;
-  --color-error-texto: #f5c6c0;
-  --color-error-borde: #611a15;
-  --color-inactivo-fondo: #24242a;
-  --color-inactivo-texto: #cccccc;
-  --color-inactivo-borde: #3a3a42;
+  --color-texto: #eef1f6;
+  --color-texto-secundario: #8b93a7;
+  --color-fondo: #0b0d12;
+  --color-superficie: #14161d;
+  --color-superficie-alterna: #191c25;
+  --color-borde: #262933;
+  --color-borde-input: #3a3e4a;
+
+  --color-primario: #5b8dfb;
+  --color-primario-hover: #7aa2ff;
+  --color-primario-texto: #0b0d12;
+  --color-primario-tenue: #182544;
+
+  --color-peligro: #ff6b7a;
+  --color-exito: #34d399;
+  --color-exito-fondo: #0f2b22;
+  --color-exito-texto: #86efc4;
+  --color-exito-borde: #1c5c43;
+
+  --color-error-fondo: #351319;
+  --color-error-texto: #ffb0ba;
+  --color-error-borde: #6b232e;
+
+  --color-advertencia: #f5b93d;
+  --color-advertencia-fondo: #332405;
+  --color-advertencia-texto: #ffd479;
+  --color-advertencia-borde: #6b4d10;
+
+  --color-inactivo-fondo: #1b1e26;
+  --color-inactivo-texto: #9aa1b0;
+  --color-inactivo-borde: #2c303b;
+
+  --sombra-tarjeta: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --sombra-tarjeta-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --color-texto: #1a1a1a;
-  --color-fondo: #ffffff;
-  --color-borde: #e2e2e2;
-  --color-borde-input: #999999;
-  --color-primario: #1a5fb4;
+  --color-texto: #12141a;
+  --color-texto-secundario: #6b7280;
+  --color-fondo: #f3f5f9;
+  --color-superficie: #ffffff;
+  --color-superficie-alterna: #f8f9fc;
+  --color-borde: #e4e7ee;
+  --color-borde-input: #c7cbd6;
+
+  --color-primario: #2f6fed;
+  --color-primario-hover: #255dd1;
   --color-primario-texto: #ffffff;
-  --color-peligro: #c01c28;
-  --color-exito: #2ec27e;
-  --color-exito-fondo: #e6f7ee;
-  --color-exito-texto: #14532d;
-  --color-exito-borde: #b7e4c7;
-  --color-error-fondo: #fdecea;
-  --color-error-texto: #611a15;
-  --color-error-borde: #f5c6c0;
-  --color-inactivo-fondo: #f3f3f3;
-  --color-inactivo-texto: #444444;
-  --color-inactivo-borde: #dddddd;
+  --color-primario-tenue: #eaf1ff;
+
+  --color-peligro: #d1293d;
+  --color-exito: #1c9a6c;
+  --color-exito-fondo: #e7f7f0;
+  --color-exito-texto: #0f6b46;
+  --color-exito-borde: #b8e6d3;
+
+  --color-error-fondo: #fdecee;
+  --color-error-texto: #8c1f2e;
+  --color-error-borde: #f4c2c9;
+
+  --color-advertencia: #b5750a;
+  --color-advertencia-fondo: #fdf1dc;
+  --color-advertencia-texto: #7a4d05;
+  --color-advertencia-borde: #f2dba6;
+
+  --color-inactivo-fondo: #eef0f4;
+  --color-inactivo-texto: #565c66;
+  --color-inactivo-borde: #dde0e6;
+
+  --sombra-tarjeta: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --sombra-tarjeta-hover: 0 2px 6px rgba(16, 24, 40, 0.06), 0 6px 16px rgba(16, 24, 40, 0.08);
 }
 
 body {
@@ -106,6 +184,7 @@ body {
   min-height: 100svh;
   background: var(--color-fondo);
   color: var(--color-texto);
+  transition: background-color var(--transicion), color var(--transicion);
 }
 
 #root {
@@ -114,4 +193,17 @@ body {
 
 a {
   color: var(--color-primario);
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+button,
+input,
+select {
+  transition: background-color var(--transicion), border-color var(--transicion), color var(--transicion),
+    box-shadow var(--transicion), opacity var(--transicion);
 }
