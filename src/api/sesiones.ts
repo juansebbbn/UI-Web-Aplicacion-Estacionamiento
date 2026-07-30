@@ -17,7 +17,7 @@ export async function listarSesionesPropias(): Promise<SesionRespuesta[]> {
   return respuesta.data;
 }
 
-// Solo INSPECTOR.
+// Solo ADMINISTRADOR (el rol INSPECTOR se eliminó, ver PROGRESO.md).
 export async function inspeccionarPatente(patente: string): Promise<InspeccionRespuesta> {
   const respuesta = await cliente.get<InspeccionRespuesta>(`/sesiones/inspeccion/${patente}`);
   return respuesta.data;

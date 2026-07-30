@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-export type RolDemo = "Usuario" | "Inspector" | "Administrador";
+export type RolDemo = "Usuario" | "Administrador";
 
 // Entra usando el panel de modo demo de Login.tsx (solo existe en dev, ver
 // src/componentes/PanelModoDemo.tsx): sirve datos ficticios sin backend.

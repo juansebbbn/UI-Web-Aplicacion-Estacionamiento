@@ -4,7 +4,7 @@ import type { NavLinkRenderProps } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
 import { estaEnModoDemo } from "../api/modoDemo";
 import { ConmutadorTema } from "./ConmutadorTema";
-import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "../tipos/roles";
+import { ROL_ADMINISTRADOR, ROL_USUARIO } from "../tipos/roles";
 import estilos from "./Layout.module.css";
 
 function claseNavLink({ isActive }: NavLinkRenderProps): string {
@@ -149,17 +149,17 @@ export function Layout() {
                 </NavLink>
               </>
             )}
-            {tieneRol(ROL_INSPECTOR) && (
-              <NavLink to="/inspeccion" className={claseNavLink} onClick={cerrarMenu}>
-                <IconoInspeccion />
-                Inspección
-              </NavLink>
-            )}
             {tieneRol(ROL_ADMINISTRADOR) && (
-              <NavLink to="/admin" className={claseNavLink} onClick={cerrarMenu}>
-                <IconoAdministracion />
-                Administración
-              </NavLink>
+              <>
+                <NavLink to="/admin" className={claseNavLink} onClick={cerrarMenu}>
+                  <IconoAdministracion />
+                  Administración
+                </NavLink>
+                <NavLink to="/inspeccion" className={claseNavLink} onClick={cerrarMenu}>
+                  <IconoInspeccion />
+                  Inspección
+                </NavLink>
+              </>
             )}
             <NavLink to="/lineas" className={claseNavLink} onClick={cerrarMenu}>
               <IconoLineas />

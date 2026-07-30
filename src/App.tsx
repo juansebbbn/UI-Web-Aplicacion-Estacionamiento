@@ -13,7 +13,7 @@ import { Reclamos } from "./paginas/Reclamos";
 import { Lineas } from "./paginas/Lineas";
 import { Inspeccion } from "./paginas/Inspeccion";
 import { Administracion } from "./paginas/Administracion";
-import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "./tipos/roles";
+import { ROL_ADMINISTRADOR, ROL_USUARIO } from "./tipos/roles";
 
 // Paginas sin Layout (sin sidebar/topbar propios): el toggle de tema queda
 // como pill flotante, igual que antes de que Layout tuviera uno inline.
@@ -81,7 +81,7 @@ function App() {
         <Route
           path="/inspeccion"
           element={
-            <RutaProtegida rolRequerido={ROL_INSPECTOR}>
+            <RutaProtegida rolRequerido={ROL_ADMINISTRADOR}>
               <Inspeccion />
             </RutaProtegida>
           }

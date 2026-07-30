@@ -89,11 +89,11 @@ let otrosUsuariosDemo: UsuarioAdminRespuesta[] = [
   },
   {
     id: 4,
-    username: "inspector.demo",
+    username: "sofia.martinez",
     dni: "27333444",
     saldo: 0,
     fechaRegistro: haceMinutos(60 * 24 * 90),
-    roles: ["ROLE_INSPECTOR"],
+    roles: ["ROLE_USUARIO"],
     vehiculos: [],
   },
 ];
