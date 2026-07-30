@@ -76,6 +76,19 @@ function IconoAdministracion() {
   );
 }
 
+function IconoReclamos() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path
+        d="M4 5h16v11H8l-4 4Z"
+        strokeLinejoin="round"
+      />
+      <path d="M12 9v3.5" strokeLinecap="round" />
+      <circle cx="12" cy="15" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 function IconoLineas() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -129,6 +142,10 @@ export function Layout() {
                 <NavLink to="/historial" className={claseNavLink} onClick={cerrarMenu}>
                   <IconoHistorial />
                   Historial
+                </NavLink>
+                <NavLink to="/reclamos" className={claseNavLink} onClick={cerrarMenu}>
+                  <IconoReclamos />
+                  Reclamos
                 </NavLink>
               </>
             )}

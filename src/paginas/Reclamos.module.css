@@ -1,0 +1,122 @@
+.tituloPagina {
+  margin: 0 0 6px;
+  font-size: 1.3rem;
+}
+
+.ayuda {
+  margin: 0 0 20px;
+  color: var(--color-texto-secundario);
+  font-size: 0.92rem;
+}
+
+.tarjetaFormulario {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  max-width: 480px;
+}
+
+.tituloTarjeta {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+}
+
+.tituloSeccion {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
+}
+
+.campo select,
+.campo textarea {
+  padding: 10px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 1px solid var(--color-borde-input);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  resize: vertical;
+}
+
+.campo select:focus,
+.campo textarea:focus {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 1px;
+}
+
+.boton {
+  align-self: flex-start;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radio-control);
+  background: var(--color-primario);
+  color: var(--color-primario-texto);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--color-primario-hover);
+}
+
+.lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item {
+  padding: 14px 18px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.itemEncabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.insigniaMotivo {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primario-tenue);
+  color: var(--color-primario);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.fecha {
+  font-size: 0.8rem;
+  color: var(--color-texto-secundario);
+}
+
+.descripcion {
+  margin: 0;
+  font-size: 0.92rem;
+}

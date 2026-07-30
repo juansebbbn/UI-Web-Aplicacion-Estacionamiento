@@ -9,6 +9,7 @@ import { Inicio } from "./paginas/Inicio";
 import { DashboardUsuario } from "./paginas/DashboardUsuario";
 import { Vehiculos } from "./paginas/Vehiculos";
 import { Historial } from "./paginas/Historial";
+import { Reclamos } from "./paginas/Reclamos";
 import { Lineas } from "./paginas/Lineas";
 import { Inspeccion } from "./paginas/Inspeccion";
 import { Administracion } from "./paginas/Administracion";
@@ -66,6 +67,14 @@ function App() {
           element={
             <RutaProtegida rolRequerido={ROL_USUARIO}>
               <Historial />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/reclamos"
+          element={
+            <RutaProtegida rolRequerido={ROL_USUARIO}>
+              <Reclamos />
             </RutaProtegida>
           }
         />
