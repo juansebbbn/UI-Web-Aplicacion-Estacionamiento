@@ -5,11 +5,16 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 8, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 9, 2026-07-30)
 
-La Iteración 8 cambió la navegación de nav horizontal (pills) a sidebar
-izquierdo fijo, con drawer off-canvas en pantallas <=900px (hamburguesa +
-overlay). Ver esa iteración para el detalle. Además de todo lo de la
+La Iteración 9 reubicó el acceso de usuario (nombre/roles/logout) al pie
+del sidebar y el toggle de tema a la topbar (antes al revés: usuario en
+la topbar, toggle flotante fijo). De paso se encontró y corrigió un bug
+real de layout en desktop (el sidebar se estiraba con el alto del
+contenido). Ver esa iteración para el detalle. La Iteración 8 cambió la
+navegación de nav horizontal (pills) a sidebar izquierdo fijo, con drawer
+off-canvas en pantallas <=900px (hamburguesa + overlay). Ver esa
+iteración para el detalle. Además de todo lo de la
 Iteración 6, se completó un **rediseño visual
 completo** (Iteración 7: paleta tipo dashboard fintech, dark mode
 conservado y mejorado). Ver esa iteración para el detalle. No cambió
@@ -598,3 +603,42 @@ manual (capturas Playwright, no versionadas) en desktop (1400px, claro y
 oscuro), tablet (820px, drawer) y mobile (390px, drawer cerrado y
 abierto con overlay): sin problemas de contraste ni de recorte en
 ninguno.
+
+## Iteración 9 — 2026-07-30
+
+**Qué se hizo:** a pedido del usuario, se intercambiaron las posiciones
+del acceso de usuario y el toggle de tema:
+- El bloque de usuario/roles/"Cerrar sesión" pasó de la topbar al **pie
+  del sidebar**, separado del nav con un borde superior y empujado abajo
+  con `margin-top: auto`.
+- El toggle de tema (`ConmutadorTema`) pasó a ocupar el lugar que dejó
+  libre en la topbar (arriba a la derecha), en vez de ser una pill fija
+  flotante en todas las páginas.
+- `ConmutadorTema` ganó una prop `variante: "flotante" | "inline"` en vez
+  de tener un único estilo hardcodeado. Como las páginas sin `Layout`
+  (login, registro, líneas) no tienen topbar propia, siguen necesitando
+  la variante flotante — se armó un `LayoutPublico` liviano en `App.tsx`
+  (monta `<ConmutadorTema variante="flotante" />` + `<Outlet />`) para
+  esas tres rutas, y se sacó el mount global único que antes vivía arriba
+  de `<Routes>`.
+
+**Bug real encontrado y corregido al verificar:** en desktop, el
+`<aside>` del sidebar es un hijo flex de `.app` sin altura propia, así
+que por default se estiraba (`align-items: stretch`) para igualar el
+alto del **contenido principal** — que en páginas con mapa (dashboard)
+es más alto que el viewport. Eso empujaba el pie del sidebar (usuario +
+logout) muy por debajo de la pantalla visible, no al fondo del sidebar
+que se ve. Se corrigió con `position: sticky; top: 0; height: 100svh;
+align-self: flex-start; overflow-y: auto` en `.sidebar`, para que su
+altura sea siempre la del viewport (no la del contenido) y quede anclado
+mientras la página principal scrollea. Se verificó con el
+`boundingBox()` de Playwright del botón "Cerrar sesión" antes y después
+de un scroll fuerte de la página: misma posición cerca del borde
+inferior del viewport en ambos casos.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (9/9) en verde sin tocar ningún spec (los tests ubican
+el toggle por `role="radio"` + `title`, no por posición). Revisión visual
+manual en desktop (1400×900, claro/oscuro, con y sin scroll) y mobile
+(390×844, drawer abierto): el pie del sidebar queda visible y anclado en
+los tres casos.
