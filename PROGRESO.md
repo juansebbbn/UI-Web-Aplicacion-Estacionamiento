@@ -5,9 +5,12 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 10, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 11, 2026-07-30)
 
-La Iteración 10 corrigió que "Líneas de colectivo" abriera como una
+La Iteración 11 agregó selección de línea + recorrido en el mapa, con
+datos de recorrido hardcodeados en el frontend (ilustrativos, no reales
+— ver esa iteración antes de asumir que son datos verdaderos). La
+Iteración 10 corrigió que "Líneas de colectivo" abriera como una
 página suelta sin sidebar/topbar al clickearla desde el nav estando
 logueado — ahora se abre dentro del Layout normal, al lado del sidebar,
 sin perder el acceso público sin cuenta. Ver esa iteración para el
@@ -673,3 +676,44 @@ acceso sin cuenta no cambiaron.
 logueado, "/lineas" se ve con sidebar/topbar completos en claro y
 oscuro; sin sesión, sigue siendo la página standalone con "← Volver"
 apuntando a `/login`.
+
+## Iteración 11 — 2026-07-30
+
+**Qué se hizo:** primer feature nuevo del proyecto pedido durante el
+rediseño (no era solo estilos): en "Líneas de colectivo" ahora se puede
+clickear una línea de la lista para ver un panel de detalle (número,
+nombre) y su recorrido dibujado sobre un mapa Leaflet.
+
+- `src/componentes/MapaRecorrido.tsx` (+ `.module.css`): nuevo, recibe
+  `puntos: Coordenada[]` y `color`, dibuja un `Polyline` y hace
+  `fitBounds` automático a los puntos de la línea seleccionada (mismo
+  patrón que `AjustarVistaAZonas` de `MapaZonas.tsx`, pero sin el fix de
+  ícono de marker porque acá no hay markers, solo la línea).
+- `src/data/recorridosLineas.ts` (nuevo): `Record<number, Coordenada[]>`
+  indexado por **número** de línea (no `id` — es el identificador natural
+  e inmutable). El backend (`LineaRespuesta`) no tiene geometría de
+  recorrido y el pedido explícito del usuario fue "que no tenga que estar
+  fetcheando siempre", así que esto vive hardcodeado en el frontend, sin
+  llamada a la API. Una línea sin entrada en el diccionario no rompe: la
+  UI muestra "Todavía no hay un recorrido cargado para esta línea."
+- **Decisión de diseño importante, confirmada con el usuario antes de
+  escribir código**: no tengo (ni el backend tiene) datos reales de los
+  recorridos de los colectivos de Tandil. Se optó por coordenadas
+  **ilustrativas** armadas a mano cerca del centro de la ciudad (mismo
+  punto `CENTRO_TANDIL` que ya usaba `MapaZonas.tsx`) para poder mostrar
+  la funcionalidad, dejando comentado bien explícito en el archivo que
+  no es un relevamiento real y que hay que reemplazarlas cuando existan
+  datos verdaderos. Se evitó deliberadamente presentar esto como si
+  fueran recorridos reales.
+- `Lineas.tsx`: cada línea de la lista pasa de `<li>` a un `<li><button>`
+  clickeable (con `aria-pressed`), estado local `seleccionada`. Layout
+  responsive: lista + panel de detalle lado a lado en pantallas
+  `>= 760px`, apilados en mobile/tablet chico. Funciona igual logueado
+  (dentro del `Layout`, vía `EnvoltorioLineas`) y en el acceso público
+  sin cuenta (mismo componente, sin diferencias de comportamiento).
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (9/9) en verde. Revisión visual manual: selección y
+recorrido correctos para ambas líneas semilla (500 y 501) en claro,
+oscuro, desktop (lista+detalle lado a lado) y mobile (apilado, con el
+drawer del sidebar).
