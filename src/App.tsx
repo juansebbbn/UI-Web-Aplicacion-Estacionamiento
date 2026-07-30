@@ -5,6 +5,9 @@ import { Login } from "./paginas/Login";
 import { Registro } from "./paginas/Registro";
 import { Inicio } from "./paginas/Inicio";
 import { DashboardUsuario } from "./paginas/DashboardUsuario";
+import { Vehiculos } from "./paginas/Vehiculos";
+import { Historial } from "./paginas/Historial";
+import { Lineas } from "./paginas/Lineas";
 import { ROL_USUARIO } from "./tipos/roles";
 
 function App() {
@@ -12,6 +15,7 @@ function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/registro" element={<Registro />} />
+      <Route path="/lineas" element={<Lineas />} />
 
       <Route
         element={
@@ -26,6 +30,22 @@ function App() {
           element={
             <RutaProtegida rolRequerido={ROL_USUARIO}>
               <DashboardUsuario />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/vehiculos"
+          element={
+            <RutaProtegida rolRequerido={ROL_USUARIO}>
+              <Vehiculos />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/historial"
+          element={
+            <RutaProtegida rolRequerido={ROL_USUARIO}>
+              <Historial />
             </RutaProtegida>
           }
         />

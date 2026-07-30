@@ -1,0 +1,29 @@
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e2e2e2;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tabla th,
+  .tabla td {
+    border-color: #333;
+  }
+}
+
+.contenedorTabla {
+  overflow-x: auto;
+}
+
+.estadoActiva {
+  color: #1a5fb4;
+  font-weight: 600;
+}

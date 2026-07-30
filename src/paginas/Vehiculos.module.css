@@ -1,0 +1,68 @@
+.formulario {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 16px 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo input,
+.campo select {
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+}
+
+.botonAgregar {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #1a5fb4;
+  color: #fff;
+  cursor: pointer;
+}
+
+.botonAgregar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.lista {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .item {
+    border-color: #333;
+  }
+}
+
+.botonEliminar {
+  padding: 6px 12px;
+  border: 1px solid #c01c28;
+  color: #c01c28;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}

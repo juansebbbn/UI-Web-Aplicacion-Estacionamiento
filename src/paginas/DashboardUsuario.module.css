@@ -13,3 +13,89 @@
 .saldoNegativo {
   color: #c01c28;
 }
+
+.tarjetaSesion {
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tarjetaSesion {
+    border-color: #333;
+  }
+}
+
+.controles {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 12px 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo select {
+  padding: 8px 10px;
+  font-size: 1rem;
+  border: 1px solid #999;
+  border-radius: 6px;
+  min-width: 180px;
+}
+
+.boton {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #1a5fb4;
+  color: #fff;
+  cursor: pointer;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.botonSecundario {
+  composes: boton;
+  background: transparent;
+  color: #1a5fb4;
+  border: 1px solid #1a5fb4;
+}
+
+.mensajeVerificacion {
+  margin: 8px 0;
+  font-size: 0.9rem;
+}
+
+.dentroDeZona {
+  color: #2ec27e;
+}
+
+.fueraDeZona {
+  color: #c01c28;
+}
+
+.resultadoExito {
+  background: #e6f7ee;
+  color: #14532d;
+  border: 1px solid #b7e4c7;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .resultadoExito {
+    background: #123a24;
+    color: #b7e4c7;
+    border-color: #14532d;
+  }
+}

@@ -39,6 +39,21 @@
   font-size: 0.9rem;
 }
 
+.navegacion {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid #e2e2e2;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .navegacion {
+    border-color: #333;
+  }
+}
+
 .contenido {
   padding: 16px;
 }

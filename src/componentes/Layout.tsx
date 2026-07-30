@@ -1,9 +1,10 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
+import { ROL_USUARIO } from "../tipos/roles";
 import estilos from "./Layout.module.css";
 
 export function Layout() {
-  const { usuario, cerrarSesion } = useAutenticacion();
+  const { usuario, tieneRol, cerrarSesion } = useAutenticacion();
   const navegar = useNavigate();
 
   async function manejarCerrarSesion() {
@@ -27,6 +28,16 @@ export function Layout() {
           </button>
         </div>
       </header>
+      <nav className={estilos.navegacion}>
+        {tieneRol(ROL_USUARIO) && (
+          <>
+            <Link to="/estacionamiento">Mi estacionamiento</Link>
+            <Link to="/vehiculos">Vehículos</Link>
+            <Link to="/historial">Historial</Link>
+          </>
+        )}
+        <Link to="/lineas">Líneas de colectivo</Link>
+      </nav>
       <main className={estilos.contenido}>
         <Outlet />
       </main>

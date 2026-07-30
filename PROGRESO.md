@@ -5,62 +5,74 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 2, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 3, 2026-07-30)
 
-Lo que ya funciona, probado contra el backend real: registro, login, logout,
-refresh automático de token, dashboard USUARIO con saldo y mapa de zonas.
-Todo lo demás de la especificación sigue pendiente:
+Lo que ya funciona, probado contra el backend real (incluye el flujo
+principal de USUARIO completo): registro, login, logout, refresh automático
+de token, dashboard con saldo y mapa de zonas, alta/listado/baja de
+vehículos, iniciar sesión de estacionamiento (elegir vehículo + click en el
+mapa o geolocalización + verificación de zona), finalizar sesión con monto
+cobrado, historial de sesiones propias, y la vista pública de líneas de
+colectivo (sin login).
 
 **Imprescindibles (v1) sin hacer:**
-- [ ] **Vehículos propios**: alta (`POST /vehiculos`), listado
-      (`GET /vehiculos`), baja (`DELETE /vehiculos/{patente}`). No hay
-      página ni componente todavía (`src/api/vehiculos.ts` ya existe y está
-      probado por tipos, pero nada lo consume en la UI).
-- [ ] **Iniciar sesión de estacionamiento**: elegir un vehículo propio +
-      click en el mapa (o geolocalización del navegador,
-      `navigator.geolocation`) + verificar la coordenada contra una zona
-      (`POST /zonas/verificacion`) + `POST /sesiones`. Requiere extender
-      `MapaZonas` (o un componente nuevo) para capturar el click y devolver
-      la coordenada elegida.
-- [ ] **Sesión activa y finalizarla**: mostrar la sesión en curso (con hora
-      de inicio) y el botón para finalizar (`POST /sesiones/{id}/finalizar`),
-      mostrando el monto cobrado que devuelve el backend.
-- [ ] **Historial de sesiones propias** (`GET /sesiones`).
-- [ ] **Vista pública de líneas de colectivo** (`GET /lineas`, sin login).
-      `src/api/lineas.ts` ya existe pero no se usa en ninguna página.
-- [ ] **Vista INSPECTOR**: pantalla con un campo de patente que llama a
-      `GET /sesiones/inspeccion/{patente}` y muestra si tiene sesión activa
-      y desde cuándo (sin datos del dueño). Hoy un usuario solo-INSPECTOR ve
-      el placeholder genérico de `Inicio.tsx`.
+- [ ] **Vista INSPECTOR**: pantalla con un campo de patente que llame a
+      `GET /sesiones/inspeccion/{patente}` y muestre si tiene sesión activa
+      y desde cuándo (sin datos del dueño). `src/api/sesiones.ts` ya tiene
+      `inspeccionarPatente()`, pero no hay página. Hoy un usuario
+      solo-INSPECTOR ve el placeholder genérico de `Inicio.tsx`. **Ojo con
+      el nombre de rol real**: es `ROL_INSPECTOR` = `"ROLE_INSPECTOR"` (ver
+      `src/tipos/roles.ts` y el hallazgo de la Iteración 2), no `"INSPECTOR"`
+      a secas.
 - [ ] **Vista ADMINISTRADOR**: CRUD de líneas (`POST`/`PUT`/`DELETE
       /lineas`), transferencia de titularidad de un vehículo
       (`PUT /vehiculos/{patente}/titularidad`) y tabla paginada de todas las
-      sesiones (`GET /sesiones/admin?page&size&sort`). Nada de esto tiene
-      página todavía.
-- [ ] **Errores específicos de negocio probados en la UI**: `obtenerMensajeError`
-      (en `src/api/errores.ts`) ya traduce cualquier `problem+json`, pero
-      todavía no se probó en la práctica con saldo insuficiente (402), fuera
-      de zona (422) ni conflictos (409) — van a aparecer recién con los
-      módulos de vehículos/sesiones.
+      sesiones (`GET /sesiones/admin?page&size&sort`, usar
+      `listarTodasLasSesiones()` de `src/api/sesiones.ts`, que ya devuelve
+      `Pagina<SesionRespuesta>`). Nada de esto tiene página todavía. Mismo
+      cuidado con el rol: `ROL_ADMINISTRADOR` = `"ROLE_ADMINISTRADOR"`.
+      **No hay ningún usuario ADMINISTRADOR/INSPECTOR de prueba** — el
+      registro público siempre crea `ROLE_USUARIO`; para probar estas dos
+      vistas manualmente hay que asignar el rol a mano en la tabla
+      `usuario_rol` (o como corresponda) de la base, no hay endpoint.
 - [ ] **Empaquetado**: Dockerfile + build estático servido con nginx (la
       spec lo pide para alinear con el `docker-compose.yml` del backend). No
       se creó todavía.
 
 **Deseables (si da el tiempo), sin empezar:**
 - [ ] Cronómetro en vivo del tiempo/costo estimado de la sesión activa
-      (calculado en el cliente a partir de `horaInicio` y la tarifa de zona).
-- [ ] Toasts de éxito/error en vez del banner `MensajeError` actual.
-- [ ] Tests E2E con Playwright de iniciar/finalizar sesión (los scripts
-      manuales usados para verificar la Iteración 2 no quedaron como suite
-      de tests, solo como verificación puntual — ver esa iteración).
+      (calculado en el cliente a partir de `horaInicio` y la tarifa de zona;
+      hoy `DashboardUsuario` solo muestra la hora de inicio, sin costo
+      corriendo en vivo).
+- [ ] Toasts de éxito/error en vez del banner `MensajeError` actual (que
+      sigue siendo el único mecanismo de feedback en todas las páginas).
+- [ ] Tests E2E con Playwright de iniciar/finalizar sesión. Se verificó el
+      flujo completo (incluido iniciar/finalizar) a mano contra el backend
+      real en las Iteraciones 2 y 3, pero esos scripts quedaron en el
+      scratchpad de la sesión de trabajo, no como suite versionada en el
+      repo.
 - [ ] Dark mode: hoy solo hay `@media (prefers-color-scheme: dark)` parcial
-      en algunos CSS Modules (`MensajeError`, `Layout`), sin cobertura
-      completa ni toggle manual.
+      en algunos CSS Modules, sin cobertura completa ni toggle manual.
 
 **Deuda de testing:** los únicos tests automatizados hoy son de `src/api/`
 (`almacenTokens.test.ts`, `errores.test.ts`). No hay ningún test de
-componentes ni de páginas (Login, Registro, DashboardUsuario, Layout,
-RutaProtegida, MapaZonas) todavía.
+componentes ni de páginas (`Login`, `Registro`, `DashboardUsuario`,
+`Vehiculos`, `Historial`, `Lineas`, `Layout`, `RutaProtegida`, `MapaZonas`)
+todavía — todo lo de UI se verificó manualmente con Playwright contra el
+backend real, no con Vitest/RTL.
+
+**Deuda menor detectada en el camino (no bloqueante):**
+- [ ] `DashboardUsuario` no tiene forma de "cancelar" una coordenada ya
+      elegida en el mapa sin hacer otro click; tampoco valida que el click
+      esté dentro de un radio razonable antes de llamar a `/zonas/verificacion`
+      (llama a la API en cada click, sin debounce — no es un problema real
+      con el volumen esperado, pero vale la pena tenerlo presente si se
+      agregan más zonas).
+- [ ] La lista de líneas (`Lineas.tsx`) no se probó visualmente con datos
+      reales: la base de desarrollo no tiene líneas sembradas, así que solo
+      se vio el estado vacío ("No hay líneas cargadas."). El path con datos
+      usa el mismo patrón ya probado en zonas/vehículos/sesiones, pero no
+      se vio andar con línea reales en pantalla.
 
 **Explícitamente fuera de alcance** (no implementar aunque se pida sin
 volver a confirmar): pagos reales, notificaciones push, recuperación de
@@ -177,3 +189,76 @@ mobile.
 - Verificación manual del backend hecha con un `.env` local ad-hoc en
   `servidor-estacionamiento` (gitignorado) y `docker compose up -d mysql`
   + `mvnw spring-boot:run` con perfil `dev`; todo se detuvo al terminar.
+
+## Iteración 3 — 2026-07-30
+
+**Qué se hizo:**
+- `src/paginas/Vehiculos.tsx`: alta (formulario patente + tipo), listado y
+  baja de vehículos propios, con `useMutation` + invalidación de
+  `["vehiculos"]`.
+- `src/paginas/Historial.tsx`: tabla de sesiones propias (patente, zona,
+  inicio, fin, estado, monto), ordenada por más reciente primero.
+- `src/paginas/Lineas.tsx`: vista **pública** de líneas de colectivo (ruta
+  `/lineas` fuera de `RutaProtegida`, con link "Volver" que apunta a `/` o
+  `/login` según si hay sesión).
+- `src/componentes/MapaZonas.tsx` extendido para ser interactivo: click en
+  el mapa para elegir coordenada (`useMapEvents`), marcador en el punto
+  elegido, y recentrado (`flyTo`) cuando cambia. Se corrigió también el
+  ícono default de Leaflet (rompe con el bundling de Vite si no se pisan
+  las URLs a mano) y se ajustó `AjustarVistaAZonas` para que el
+  `fitBounds` inicial corra una sola vez (con un `ref`, no en cada refetch
+  de React Query) y no le pise al usuario la vista mientras elige dónde
+  estacionar.
+- `src/paginas/DashboardUsuario.tsx` extendido: si hay sesión activa,
+  muestra patente/zona/hora de inicio y el botón "Finalizar sesión" (con el
+  monto cobrado al finalizar, invalidando saldo y sesiones). Si no hay
+  sesión activa, muestra el selector de vehículo propio, un botón "Usar mi
+  ubicación" (`navigator.geolocation`), y el mapa interactivo con
+  verificación de zona en vivo (`POST /zonas/verificacion` en cada click,
+  vía `useQuery` habilitado por la coordenada elegida); "Estacionar acá" se
+  habilita solo si la coordenada cae dentro de una zona.
+- `src/utils/formato.ts`: se agregó `formatearFecha` (`Intl.DateTimeFormat`)
+  para mostrar `horaInicio`/`horaFin`.
+- `src/componentes/Layout.tsx`: nav con links a Mi estacionamiento,
+  Vehículos, Historial (solo si `tieneRol(ROL_USUARIO)`) y Líneas de
+  colectivo (siempre).
+- `App.tsx`: rutas nuevas `/vehiculos`, `/historial` (protegidas, rol
+  USUARIO) y `/lineas` (pública).
+- **Verificación end-to-end contra el backend real** (mismo setup que la
+  Iteración 2: Colima + MySQL + `servidor-estacionamiento` perfil `dev` +
+  `ui-web` con `npm run dev`), con Playwright headless y geolocalización
+  simulada (`context.setGeolocation` sobre el centro real de la única zona
+  sembrada, "Microcentro Tandil"):
+  - Registro → alta de vehículo → volver al dashboard → elegir vehículo →
+    "Usar mi ubicación" → "Dentro de la zona 'Microcentro Tandil'" →
+    "Estacionar acá" → tarjeta de sesión activa → "Finalizar sesión" →
+    banner "Se cobraron $ 100,00" → saldo del header pasa a **-$100,00**
+    (rojo) → Historial muestra la fila finalizada → `/lineas` carga
+    (vacía, sin datos sembrados en dev). Sin errores de consola en ningún
+    paso.
+  - Se detectó y corrigió en el momento un bug de test (no de la app): el
+    script reusaba un DNI fijo entre corridas y pisaba la restricción de
+    unicidad (409) — confirmó, de paso, que el manejo de errores 409
+    funciona.
+
+**Decisiones importantes tomadas / hallazgos:**
+- El ícono default de `leaflet` (`L.Icon.Default`) hay que pisarlo a mano
+  con `mergeOptions` apuntando a los PNG importados vía Vite
+  (`marker-icon.png`, `marker-icon-2x.png`, `marker-shadow.png`): es un
+  problema conocido de Leaflet con cualquier bundler moderno, no algo
+  específico de este proyecto.
+- El `fitBounds` automático de `MapaZonas` se cambió para correr una sola
+  vez (antes se disparaba en cada cambio de referencia del array `zonas`,
+  lo cual con `refetchOnWindowFocus` de React Query podía volver a
+  centrar el mapa de golpe mientras el usuario estaba con el dedo eligiendo
+  dónde estacionar).
+- `iniciar()` de sesión no cobra nada (el saldo no cambia al iniciar, solo
+  valida el límite de deuda); el cobro real ocurre recién en `finalizar()`.
+  Confirmado en vivo contra el backend, no solo leyendo el código: el saldo
+  se mantuvo en `$0,00` con la sesión activa y bajó a `-$100,00` recién
+  después de finalizar.
+- Se sigue sin poder probar las vistas INSPECTOR/ADMINISTRADOR en un
+  navegador real porque el registro público solo puede crear
+  `ROLE_USUARIO`. Cuando se construyan esas páginas (próxima iteración) va
+  a hacer falta asignar esos roles a mano en la base para poder
+  verificarlas end-to-end como se hizo con USUARIO.
