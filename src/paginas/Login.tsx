@@ -28,36 +28,44 @@ export function Login() {
   }
 
   return (
-    <div className={estilos.contenedor}>
-      <h1>Iniciar sesión</h1>
-      <form className={estilos.formulario} onSubmit={manejarEnvio}>
-        <label className={estilos.campo}>
-          Usuario
-          <input
-            value={username}
-            onChange={(evento) => setUsername(evento.target.value)}
-            required
-            autoComplete="username"
-          />
-        </label>
-        <label className={estilos.campo}>
-          Contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(evento) => setPassword(evento.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </label>
-        <button type="submit" className={estilos.enviar} disabled={cargando}>
-          {cargando ? "Ingresando..." : "Ingresar"}
-        </button>
-      </form>
-      <p className={estilos.enlaceAlternativo}>
-        ¿No tenés cuenta? <Link to="/registro">Registrate</Link>
-      </p>
-      {import.meta.env.DEV && <PanelModoDemo />}
+    <div className={estilos.pagina}>
+      <div className={estilos.contenedor}>
+        <div className={estilos.marca}>
+          <span className={estilos.logo}>P</span>
+          <span className={estilos.nombreApp}>Estacionamiento Tandil</span>
+        </div>
+        <div className={estilos.tarjeta}>
+          <h1 className={estilos.titulo}>Iniciar sesión</h1>
+          <form className={estilos.formulario} onSubmit={manejarEnvio}>
+            <label className={estilos.campo}>
+              Usuario
+              <input
+                value={username}
+                onChange={(evento) => setUsername(evento.target.value)}
+                required
+                autoComplete="username"
+              />
+            </label>
+            <label className={estilos.campo}>
+              Contraseña
+              <input
+                type="password"
+                value={password}
+                onChange={(evento) => setPassword(evento.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </label>
+            <button type="submit" className={estilos.enviar} disabled={cargando}>
+              {cargando ? "Ingresando..." : "Ingresar"}
+            </button>
+          </form>
+          <p className={estilos.enlaceAlternativo}>
+            ¿No tenés cuenta? <Link to="/registro">Registrate</Link>
+          </p>
+        </div>
+        {import.meta.env.DEV && <PanelModoDemo />}
+      </div>
     </div>
   );
 }

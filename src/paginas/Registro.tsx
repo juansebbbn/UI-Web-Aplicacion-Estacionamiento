@@ -29,49 +29,57 @@ export function Registro() {
   }
 
   return (
-    <div className={estilos.contenedor}>
-      <h1>Crear cuenta</h1>
-      <form className={estilos.formulario} onSubmit={manejarEnvio}>
-        <label className={estilos.campo}>
-          Usuario
-          <input
-            value={username}
-            onChange={(evento) => setUsername(evento.target.value)}
-            required
-            minLength={4}
-            maxLength={50}
-            autoComplete="username"
-          />
-        </label>
-        <label className={estilos.campo}>
-          Contraseña
-          <input
-            type="password"
-            value={password}
-            onChange={(evento) => setPassword(evento.target.value)}
-            required
-            minLength={8}
-            autoComplete="new-password"
-          />
-        </label>
-        <label className={estilos.campo}>
-          DNI
-          <input
-            value={dni}
-            onChange={(evento) => setDni(evento.target.value)}
-            required
-            pattern="[0-9]{7,9}"
-            title="Entre 7 y 9 dígitos"
-            inputMode="numeric"
-          />
-        </label>
-        <button type="submit" className={estilos.enviar} disabled={cargando}>
-          {cargando ? "Creando cuenta..." : "Crear cuenta"}
-        </button>
-      </form>
-      <p className={estilos.enlaceAlternativo}>
-        ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
-      </p>
+    <div className={estilos.pagina}>
+      <div className={estilos.contenedor}>
+        <div className={estilos.marca}>
+          <span className={estilos.logo}>P</span>
+          <span className={estilos.nombreApp}>Estacionamiento Tandil</span>
+        </div>
+        <div className={estilos.tarjeta}>
+          <h1 className={estilos.titulo}>Crear cuenta</h1>
+          <form className={estilos.formulario} onSubmit={manejarEnvio}>
+            <label className={estilos.campo}>
+              Usuario
+              <input
+                value={username}
+                onChange={(evento) => setUsername(evento.target.value)}
+                required
+                minLength={4}
+                maxLength={50}
+                autoComplete="username"
+              />
+            </label>
+            <label className={estilos.campo}>
+              Contraseña
+              <input
+                type="password"
+                value={password}
+                onChange={(evento) => setPassword(evento.target.value)}
+                required
+                minLength={8}
+                autoComplete="new-password"
+              />
+            </label>
+            <label className={estilos.campo}>
+              DNI
+              <input
+                value={dni}
+                onChange={(evento) => setDni(evento.target.value)}
+                required
+                pattern="[0-9]{7,9}"
+                title="Entre 7 y 9 dígitos"
+                inputMode="numeric"
+              />
+            </label>
+            <button type="submit" className={estilos.enviar} disabled={cargando}>
+              {cargando ? "Creando cuenta..." : "Crear cuenta"}
+            </button>
+          </form>
+          <p className={estilos.enlaceAlternativo}>
+            ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
