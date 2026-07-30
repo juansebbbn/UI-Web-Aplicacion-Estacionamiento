@@ -5,25 +5,24 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 4, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 5, 2026-07-30)
 
-**Las tres vistas imprescindibles de la especificación (USUARIO, INSPECTOR,
-ADMINISTRADOR) ya están implementadas** y verificadas — USUARIO e INSPECTOR/
-ADMINISTRADOR con métodos distintos, ver Iteración 4. Lo que ya funciona:
-registro, login, logout, refresh automático de token; dashboard USUARIO con
-saldo y mapa de zonas; alta/listado/baja de vehículos; iniciar sesión de
-estacionamiento (vehículo + click en el mapa o geolocalización + verificación
-de zona); finalizar sesión con monto cobrado; historial propio; vista pública
-de líneas; inspección de patente por INSPECTOR; y panel ADMINISTRADOR (CRUD
-de líneas, transferencia de titularidad, tabla paginada de sesiones). Además
+**Todo el alcance imprescindible (v1) de la especificación original está
+completo.** Las tres vistas (USUARIO, INSPECTOR, ADMINISTRADOR), el manejo de
+errores RFC 7807, y el empaquetado Docker/nginx — ver Iteración 5 para el
+detalle de esto último. Lo que funciona, todo verificado contra el backend
+real (no solo compilado): registro, login, logout, refresh automático de
+token; dashboard USUARIO con saldo y mapa de zonas; alta/listado/baja de
+vehículos; iniciar sesión de estacionamiento (vehículo + click en el mapa o
+geolocalización + verificación de zona); finalizar sesión con monto cobrado;
+historial propio; vista pública de líneas; inspección de patente por
+INSPECTOR; panel ADMINISTRADOR (CRUD de líneas, transferencia de titularidad,
+tabla paginada de sesiones); y el build de producción (`docker compose up
+--build`, nginx sirviendo el estático) hablando con el backend real. Además
 hay un **modo demo** dev-only para navegar cualquier rol sin backend (ver
-Iteración 4).
+Iteración 4), confirmado ausente del bundle de producción.
 
-**Imprescindibles (v1) sin hacer:**
-- [ ] **Empaquetado**: Dockerfile + build estático servido con nginx (la
-      spec lo pide para alinear con el `docker-compose.yml` del backend). No
-      se creó todavía. Es lo único que queda del alcance imprescindible de
-      la especificación original.
+**Imprescindibles (v1): nada pendiente.**
 
 **Deseables (si da el tiempo), sin empezar:**
 - [ ] Cronómetro en vivo del tiempo/costo estimado de la sesión activa
@@ -335,3 +334,56 @@ mobile.
   en `fixturesDemo.ts`) y se reinicia con cada recarga de página — a
   propósito, no vale la pena persistirlo en `localStorage` para una
   herramienta de solo-desarrollo.
+
+## Iteración 5 — 2026-07-30
+
+**Qué se hizo:**
+- `Dockerfile` multi-stage: `node:22-alpine` compila (`npm ci` + `npm run
+  build`), `nginx:1.27-alpine` sirve `dist/`. `VITE_API_BASE_URL` entra como
+  `ARG`/`ENV` del stage de build (Vite lo resuelve en build time, no en
+  runtime — no hay forma de cambiarlo sin reconstruir la imagen).
+- `nginx.conf`: `try_files ... /index.html` para que las rutas de React
+  Router no den 404 al refrescar la página; cache agresivo e inmutable para
+  `/assets/` (tienen hash en el nombre) y `no-cache` para `index.html` (para
+  que un deploy nuevo se vea sin esperar expiración de cache).
+- `docker-compose.yml` propio de `ui-web` (independiente del de
+  `servidor-estacionamiento`: son repos separados, cada uno con su ciclo de
+  vida): un solo servicio nginx, puerto configurable por `UI_WEB_PORT`
+  (default `8081`).
+- `.env.example` y README actualizados: se aclara que `VITE_API_BASE_URL`
+  para Docker tiene que ser la URL **pública** real del backend, no
+  `localhost` (eso solo vale para `npm run dev`).
+- **Se encontró y corrigió una fuga real del modo demo hacia el bundle de
+  producción**: el string `"MODO DEMO"` del banner de `Layout.tsx`
+  aparecía en el JS de producción (`grep` sobre `dist/assets/*.js` lo
+  confirmó) porque `estaEnModoDemo()` no chequeaba `import.meta.env.DEV`
+  — solo lo chequeaba `activarModoDemo()`. El fix fue en dos partes: (1)
+  `estaEnModoDemo()` ahora también exige `import.meta.env.DEV`, y (2) el
+  chequeo se repite *literal* en el punto de uso de `Layout.tsx`
+  (`import.meta.env.DEV && estaEnModoDemo() && (...)`), porque el bundler
+  no propaga el `false` a través de una llamada a función de otro módulo —
+  solo puede eliminar una rama muerta si el `import.meta.env.DEV` aparece
+  textualmente ahí mismo. Reconfirmado con `grep` tras el fix: cero
+  coincidencias de `"MODO DEMO"`, `"Entrar como"`, `"fixturesDemo"`,
+  `"adaptadorDemo"` o `"modo-demo"` en el bundle de producción.
+- **Verificación completa**: `docker compose build` + `up` levantó nginx en
+  `localhost:8081`; se confirmó por HTTP que `/login` y `/estacionamiento`
+  devuelven 200 (fallback de SPA funcionando) y los headers de cache son los
+  esperados. Con Playwright: la página de login servida desde el contenedor
+  no tiene el panel de modo demo (confirmado, 0 apariciones). Con el backend
+  real levantado (Colima + MySQL + perfil `dev`, `CORS_ORIGENES_PERMITIDOS`
+  apuntando a `localhost:8081`) y la imagen reconstruida apuntando a
+  `http://localhost:8080/api/v1`: registro → dashboard con saldo y mapa,
+  todo servido desde nginx en Docker, sin errores de consola.
+
+**Decisiones importantes tomadas:**
+- `ui-web` tiene su propio `docker-compose.yml`, no se agregó como servicio
+  al `docker-compose.yml` de `servidor-estacionamiento`: son dos repos git
+  independientes (decisión de la Iteración 1), cada uno se despliega por su
+  cuenta. El frontend le habla al backend por su URL pública HTTP, no por
+  red interna de Docker Compose compartida.
+- No se armó un mecanismo de inyección de variables de entorno en runtime
+  (tipo `entrypoint.sh` generando un `config.js` al arrancar el contenedor):
+  la spec solo pide que la URL sea "configurable vía variable de entorno",
+  y Vite ya cumple eso en build time. Agregar inyección en runtime sería
+  resolver un problema que nadie pidió.

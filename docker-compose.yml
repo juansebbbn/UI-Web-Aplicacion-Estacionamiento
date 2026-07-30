@@ -1,0 +1,11 @@
+services:
+  ui-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?falta VITE_API_BASE_URL en .env (la URL publica de servidor-estacionamiento)}
+    container_name: estacionamiento_ui_web
+    restart: unless-stopped
+    ports:
+      - "${UI_WEB_PORT:-8081}:80"

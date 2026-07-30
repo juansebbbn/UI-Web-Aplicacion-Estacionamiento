@@ -15,7 +15,10 @@ export function Layout() {
 
   return (
     <div>
-      {estaEnModoDemo() && (
+      {/* import.meta.env.DEV repetido a proposito (estaEnModoDemo ya lo chequea):
+          escrito aca literal, el bundler puede probar que la rama es muerta y
+          sacar el string del build de produccion (verificado con `npm run build`). */}
+      {import.meta.env.DEV && estaEnModoDemo() && (
         <p className={estilos.avisoDemo}>MODO DEMO — datos ficticios, no hay backend real detrás.</p>
       )}
       <header className={estilos.encabezado}>

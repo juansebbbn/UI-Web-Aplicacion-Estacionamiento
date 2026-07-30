@@ -7,7 +7,10 @@ import type { TokenRespuesta } from "../tipos/autenticacion";
 import { guardarSesion, leerSesion } from "./almacenTokens";
 
 export function estaEnModoDemo(): boolean {
-  return leerSesion()?.demo === true;
+  // El chequeo de DEV va tambien aca (no solo en activarModoDemo): asi
+  // ningun llamador (ej. el banner de Layout.tsx) puede mostrar nada de
+  // modo demo en produccion ni por accidente ni con localStorage tocado a mano.
+  return import.meta.env.DEV && leerSesion()?.demo === true;
 }
 
 export function activarModoDemo(rol: string): void {

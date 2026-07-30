@@ -21,9 +21,26 @@ La app queda en `http://localhost:5173`.
 
 ## Variables de entorno
 
-| Variable            | Descripción                          | Default (dev)                  |
-|---------------------|----------------------------------------|----------------------------------|
-| `VITE_API_BASE_URL` | Base URL de la API del backend         | `http://localhost:8080/api/v1`   |
+| Variable            | Descripción                                  | Default (dev)                  |
+|---------------------|-------------------------------------------------|----------------------------------|
+| `VITE_API_BASE_URL` | Base URL de la API del backend                   | `http://localhost:8080/api/v1`   |
+| `UI_WEB_PORT`       | Puerto del host al levantar con Docker Compose   | `8081`                            |
+
+## Docker
+
+Build multi-stage: compila con Node y sirve el resultado estático con nginx
+(`Dockerfile`, `nginx.conf`). `VITE_API_BASE_URL` se resuelve en **build
+time** (Vite lo hornea en el JS servido) — para producción tiene que ser la
+URL pública real de `servidor-estacionamiento`, no `localhost`. Si cambia,
+hay que reconstruir la imagen, no alcanza con reiniciar el contenedor.
+
+```bash
+cp .env.example .env   # completar VITE_API_BASE_URL con la URL real del backend
+docker compose up --build
+```
+
+Queda en `http://localhost:8081` (o el puerto que se haya puesto en
+`UI_WEB_PORT`).
 
 ## Scripts
 
