@@ -1,22 +1,79 @@
+.tituloPagina {
+  margin: 0 0 20px;
+  font-size: 1.3rem;
+}
+
+.tarjeta {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
+  overflow: hidden;
+}
+
 .tabla {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
 
-.tabla th,
-.tabla td {
+.tabla th {
   text-align: left;
-  padding: 8px 10px;
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-borde);
   white-space: nowrap;
+}
+
+.tabla td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-borde);
+  white-space: nowrap;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-superficie-alterna);
+}
+
+.patente {
+  font-weight: 600;
+}
+
+.colMonto {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .contenedorTabla {
   overflow-x: auto;
 }
 
-.estadoActiva {
+.insigniaActiva {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primario-tenue);
   color: var(--color-primario);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.insigniaFinalizada {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-inactivo-fondo);
+  color: var(--color-inactivo-texto);
+  font-size: 0.78rem;
   font-weight: 600;
 }
