@@ -1,37 +1,105 @@
-.saldo {
+.tituloPagina {
+  margin: 0 0 20px;
+  font-size: 1.3rem;
+}
+
+.filaResumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tarjetaStat {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
 }
 
-.saldoMonto {
-  font-size: 1.8rem;
+.etiqueta {
+  font-size: 0.78rem;
   font-weight: 600;
+  color: var(--color-texto-secundario);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
-.saldoNegativo {
+.cifraHero {
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.cifraNegativa {
   color: var(--color-peligro);
 }
 
 .tarjetaSesion {
+  background: var(--color-superficie);
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 16px;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
+  padding: 20px 22px;
+  margin-bottom: 20px;
 }
 
-.cronometro {
-  font-size: 1.4rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  margin: 8px 0 4px;
+.tarjetaSesionEncabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
-.costoEstimado {
-  margin: 0 0 12px;
-  font-size: 0.9rem;
-  opacity: 0.8;
+.patente {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.detalleSesion {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
+}
+
+.insigniaActiva {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-primario-tenue);
+  color: var(--color-primario);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.notaCosto {
+  margin: 0 0 16px;
+  font-size: 0.82rem;
+  color: var(--color-texto-secundario);
+}
+
+.tituloTarjeta {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.tituloSeccion {
+  margin: 24px 0 12px;
+  font-size: 1rem;
+}
+
+.ayuda {
+  font-size: 0.88rem;
+  color: var(--color-texto-secundario);
+  margin: 10px 0;
 }
 
 .controles {
@@ -46,25 +114,32 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
 }
 
 .campo select {
   padding: 8px 10px;
   font-size: 1rem;
   border: 1px solid var(--color-borde-input);
-  border-radius: 6px;
+  border-radius: var(--radio-control);
   min-width: 180px;
   background: var(--color-fondo);
   color: var(--color-texto);
 }
 
 .boton {
-  padding: 9px 16px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radio-control);
   background: var(--color-primario);
   color: var(--color-primario-texto);
+  font-weight: 600;
   cursor: pointer;
+}
+
+.boton:hover:not(:disabled) {
+  background: var(--color-primario-hover);
 }
 
 .boton:disabled {
@@ -79,6 +154,10 @@
   border: 1px solid var(--color-primario);
 }
 
+.botonSecundario:hover:not(:disabled) {
+  background: var(--color-primario-tenue);
+}
+
 .mensajeVerificacion {
   margin: 8px 0;
   font-size: 0.9rem;
@@ -86,8 +165,18 @@
 
 .dentroDeZona {
   color: var(--color-exito);
+  font-weight: 600;
 }
 
 .fueraDeZona {
   color: var(--color-peligro);
+  font-weight: 600;
+}
+
+.tarjetaMapa {
+  padding: 8px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
 }

@@ -88,18 +88,36 @@ export function DashboardUsuario() {
 
   return (
     <section>
-      <h2>Mi estacionamiento</h2>
+      <h2 className={estilos.tituloPagina}>Mi estacionamiento</h2>
 
-      <div className={estilos.saldo}>
-        <span>Saldo:</span>
-        {perfil.isPending && <span>Cargando…</span>}
-        {perfil.isError && <MensajeError mensaje={obtenerMensajeError(perfil.error)} />}
-        {perfil.data && (
-          <span
-            className={perfil.data.saldo < 0 ? `${estilos.saldoMonto} ${estilos.saldoNegativo}` : estilos.saldoMonto}
-          >
-            {formatearMonto(perfil.data.saldo)}
-          </span>
+      <div className={estilos.filaResumen}>
+        <div className={estilos.tarjetaStat}>
+          <span className={estilos.etiqueta}>Saldo</span>
+          {perfil.isPending && <span className={estilos.cifraHero}>—</span>}
+          {perfil.isError && <MensajeError mensaje={obtenerMensajeError(perfil.error)} />}
+          {perfil.data && (
+            <span
+              className={
+                perfil.data.saldo < 0 ? `${estilos.cifraHero} ${estilos.cifraNegativa}` : estilos.cifraHero
+              }
+            >
+              {formatearMonto(perfil.data.saldo)}
+            </span>
+          )}
+        </div>
+
+        {sesionActiva && (
+          <div className={estilos.tarjetaStat}>
+            <span className={estilos.etiqueta}>Tiempo estacionado</span>
+            <span className={estilos.cifraHero}>{formatearDuracion(tiempoTranscurridoMs)}</span>
+          </div>
+        )}
+
+        {sesionActiva && costoEstimado !== null && (
+          <div className={estilos.tarjetaStat}>
+            <span className={estilos.etiqueta}>Costo estimado</span>
+            <span className={estilos.cifraHero}>{formatearMonto(costoEstimado)}</span>
+          </div>
         )}
       </div>
 
@@ -108,19 +126,24 @@ export function DashboardUsuario() {
 
       {sesionActiva && (
         <div className={estilos.tarjetaSesion}>
-          <h3>Sesión activa</h3>
-          <p>
-            {sesionActiva.patente} — {sesionActiva.nombreZona}
-            <br />
-            Desde: {formatearFecha(sesionActiva.horaInicio)}
+          <div className={estilos.tarjetaSesionEncabezado}>
+            <div>
+              <p className={estilos.patente}>{sesionActiva.patente}</p>
+              <p className={estilos.detalleSesion}>
+                {sesionActiva.nombreZona} · Desde {formatearFecha(sesionActiva.horaInicio)}
+              </p>
+            </div>
+            <span className={estilos.insigniaActiva}>Activa</span>
+          </div>
+          <p className={estilos.notaCosto}>
+            El monto final lo calcula el servidor al finalizar la sesión.
           </p>
-          <p className={estilos.cronometro}>{formatearDuracion(tiempoTranscurridoMs)}</p>
-          {costoEstimado !== null && (
-            <p className={estilos.costoEstimado}>
-              Costo estimado: {formatearMonto(costoEstimado)} (el monto final lo calcula el servidor al finalizar)
-            </p>
-          )}
-          <button type="button" className={estilos.boton} onClick={() => finalizar.mutate(sesionActiva.id)} disabled={finalizar.isPending}>
+          <button
+            type="button"
+            className={estilos.boton}
+            onClick={() => finalizar.mutate(sesionActiva.id)}
+            disabled={finalizar.isPending}
+          >
             {finalizar.isPending ? "Finalizando..." : "Finalizar sesión"}
           </button>
         </div>
@@ -128,7 +151,7 @@ export function DashboardUsuario() {
 
       {!sesionActiva && sesiones.data && (
         <div className={estilos.tarjetaSesion}>
-          <h3>Estacionar</h3>
+          <h3 className={estilos.tituloTarjeta}>Estacionar</h3>
 
           {vehiculos.data && vehiculos.data.length === 0 && (
             <p>
@@ -158,7 +181,7 @@ export function DashboardUsuario() {
             </div>
           )}
 
-          <p>Tocá el mapa donde estacionaste para elegir el lugar.</p>
+          <p className={estilos.ayuda}>Tocá el mapa donde estacionaste para elegir el lugar.</p>
 
           {coordenadaSeleccionada && (
             <p className={estilos.mensajeVerificacion}>
@@ -185,15 +208,17 @@ export function DashboardUsuario() {
         </div>
       )}
 
-      <h3>Zonas de estacionamiento</h3>
+      <h3 className={estilos.tituloSeccion}>Zonas de estacionamiento</h3>
       {zonas.isPending && <p>Cargando zonas…</p>}
       {zonas.isError && <MensajeError mensaje={obtenerMensajeError(zonas.error)} />}
       {zonas.data && (
-        <MapaZonas
-          zonas={zonas.data}
-          marcador={!sesionActiva ? coordenadaSeleccionada : null}
-          onClickMapa={!sesionActiva ? setCoordenadaSeleccionada : undefined}
-        />
+        <div className={estilos.tarjetaMapa}>
+          <MapaZonas
+            zonas={zonas.data}
+            marcador={!sesionActiva ? coordenadaSeleccionada : null}
+            onClickMapa={!sesionActiva ? setCoordenadaSeleccionada : undefined}
+          />
+        </div>
       )}
     </section>
   );
