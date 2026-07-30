@@ -8,15 +8,8 @@
 .tabla td {
   text-align: left;
   padding: 8px 10px;
-  border-bottom: 1px solid #e2e2e2;
+  border-bottom: 1px solid var(--color-borde);
   white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tabla th,
-  .tabla td {
-    border-color: #333;
-  }
 }
 
 .contenedorTabla {
@@ -24,6 +17,6 @@
 }
 
 .estadoActiva {
-  color: #1a5fb4;
+  color: var(--color-primario);
   font-weight: 600;
 }

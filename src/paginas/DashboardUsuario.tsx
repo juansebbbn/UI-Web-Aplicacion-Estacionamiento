@@ -12,13 +12,15 @@ import {
 import { obtenerMensajeError } from "../api/errores";
 import { MapaZonas } from "../componentes/MapaZonas";
 import { MensajeError } from "../componentes/MensajeError";
-import { formatearFecha, formatearMonto } from "../utils/formato";
+import { useToasts } from "../contextos/contextoToasts";
+import { formatearDuracion, formatearFecha, formatearMonto } from "../utils/formato";
+import { useTiempoTranscurrido } from "../utils/useTiempoTranscurrido";
 import type { Coordenada } from "../tipos/comun";
-import type { SesionRespuesta } from "../tipos/sesion";
 import estilos from "./DashboardUsuario.module.css";
 
 export function DashboardUsuario() {
   const queryClient = useQueryClient();
+  const { mostrarExito, mostrarError } = useToasts();
   const perfil = useQuery({ queryKey: ["perfil"], queryFn: obtenerPerfilPropio });
   const zonas = useQuery({ queryKey: ["zonas"], queryFn: listarZonas });
   const sesiones = useQuery({ queryKey: ["sesiones"], queryFn: listarSesionesPropias });
@@ -28,10 +30,13 @@ export function DashboardUsuario() {
 
   const [patenteSeleccionada, setPatenteSeleccionada] = useState("");
   const [coordenadaSeleccionada, setCoordenadaSeleccionada] = useState<Coordenada | null>(null);
-  const [errorGeolocalizacion, setErrorGeolocalizacion] = useState<string | null>(null);
-  const [errorIniciar, setErrorIniciar] = useState<string | null>(null);
-  const [errorFinalizar, setErrorFinalizar] = useState<string | null>(null);
-  const [ultimaFinalizada, setUltimaFinalizada] = useState<SesionRespuesta | null>(null);
+
+  // Siempre se llama (regla de los hooks): sin sesion activa, el resultado
+  // no se usa en ningun lado.
+  const tiempoTranscurridoMs = useTiempoTranscurrido(sesionActiva?.horaInicio ?? new Date().toISOString());
+  const tarifaZonaActiva = zonas.data?.find((zona) => zona.nombre === sesionActiva?.nombreZona)?.tarifaPorMinuto;
+  const costoEstimado =
+    sesionActiva && tarifaZonaActiva !== undefined ? (tiempoTranscurridoMs / 60_000) * tarifaZonaActiva : null;
 
   const verificacion = useQuery({
     queryKey: ["verificacion-zona", coordenadaSeleccionada],
@@ -43,50 +48,41 @@ export function DashboardUsuario() {
     mutationFn: iniciarSesionEstacionamiento,
     onSuccess: () => {
       setCoordenadaSeleccionada(null);
+      mostrarExito("Sesión de estacionamiento iniciada.");
       queryClient.invalidateQueries({ queryKey: ["sesiones"] });
     },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
   const finalizar = useMutation({
     mutationFn: finalizarSesionEstacionamiento,
     onSuccess: (sesion) => {
-      setUltimaFinalizada(sesion);
+      mostrarExito(
+        `Sesión de ${sesion.patente} finalizada. Se cobraron ${
+          sesion.montoCobrado !== null ? formatearMonto(sesion.montoCobrado) : "—"
+        }.`,
+      );
       queryClient.invalidateQueries({ queryKey: ["sesiones"] });
       queryClient.invalidateQueries({ queryKey: ["perfil"] });
     },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
-  async function manejarIniciar() {
+  function manejarIniciar() {
     if (!patenteSeleccionada || !coordenadaSeleccionada) return;
-    setErrorIniciar(null);
-    try {
-      await iniciar.mutateAsync({ patente: patenteSeleccionada, coordenada: coordenadaSeleccionada });
-    } catch (err) {
-      setErrorIniciar(obtenerMensajeError(err));
-    }
-  }
-
-  async function manejarFinalizar() {
-    if (!sesionActiva) return;
-    setErrorFinalizar(null);
-    try {
-      await finalizar.mutateAsync(sesionActiva.id);
-    } catch (err) {
-      setErrorFinalizar(obtenerMensajeError(err));
-    }
+    iniciar.mutate({ patente: patenteSeleccionada, coordenada: coordenadaSeleccionada });
   }
 
   function usarMiUbicacion() {
-    setErrorGeolocalizacion(null);
     if (!navigator.geolocation) {
-      setErrorGeolocalizacion("Tu navegador no soporta geolocalización.");
+      mostrarError("Tu navegador no soporta geolocalización.");
       return;
     }
     navigator.geolocation.getCurrentPosition(
       (posicion) => {
         setCoordenadaSeleccionada({ latitud: posicion.coords.latitude, longitud: posicion.coords.longitude });
       },
-      () => setErrorGeolocalizacion("No se pudo obtener tu ubicación."),
+      () => mostrarError("No se pudo obtener tu ubicación."),
     );
   }
 
@@ -107,13 +103,6 @@ export function DashboardUsuario() {
         )}
       </div>
 
-      {ultimaFinalizada && (
-        <p className={estilos.resultadoExito}>
-          Sesión de {ultimaFinalizada.patente} finalizada. Se cobraron{" "}
-          {ultimaFinalizada.montoCobrado !== null ? formatearMonto(ultimaFinalizada.montoCobrado) : "—"}.
-        </p>
-      )}
-
       {sesiones.isPending && <p>Cargando sesión…</p>}
       {sesiones.isError && <MensajeError mensaje={obtenerMensajeError(sesiones.error)} />}
 
@@ -125,10 +114,15 @@ export function DashboardUsuario() {
             <br />
             Desde: {formatearFecha(sesionActiva.horaInicio)}
           </p>
-          <button type="button" className={estilos.boton} onClick={manejarFinalizar} disabled={finalizar.isPending}>
+          <p className={estilos.cronometro}>{formatearDuracion(tiempoTranscurridoMs)}</p>
+          {costoEstimado !== null && (
+            <p className={estilos.costoEstimado}>
+              Costo estimado: {formatearMonto(costoEstimado)} (el monto final lo calcula el servidor al finalizar)
+            </p>
+          )}
+          <button type="button" className={estilos.boton} onClick={() => finalizar.mutate(sesionActiva.id)} disabled={finalizar.isPending}>
             {finalizar.isPending ? "Finalizando..." : "Finalizar sesión"}
           </button>
-          <MensajeError mensaje={errorFinalizar} />
         </div>
       )}
 
@@ -163,7 +157,6 @@ export function DashboardUsuario() {
               </button>
             </div>
           )}
-          <MensajeError mensaje={errorGeolocalizacion} />
 
           <p>Tocá el mapa donde estacionaste para elegir el lugar.</p>
 
@@ -189,7 +182,6 @@ export function DashboardUsuario() {
           >
             {iniciar.isPending ? "Iniciando..." : "Estacionar acá"}
           </button>
-          <MensajeError mensaje={errorIniciar} />
         </div>
       )}
 

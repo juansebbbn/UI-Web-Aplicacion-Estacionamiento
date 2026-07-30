@@ -2,14 +2,18 @@ import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { inspeccionarPatente } from "../api/sesiones";
 import { obtenerMensajeError } from "../api/errores";
-import { MensajeError } from "../componentes/MensajeError";
+import { useToasts } from "../contextos/contextoToasts";
 import { formatearFecha } from "../utils/formato";
 import estilos from "./Inspeccion.module.css";
 
 export function Inspeccion() {
   const [patente, setPatente] = useState("");
+  const { mostrarError } = useToasts();
 
-  const consulta = useMutation({ mutationFn: inspeccionarPatente });
+  const consulta = useMutation({
+    mutationFn: inspeccionarPatente,
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
+  });
 
   function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
@@ -33,8 +37,6 @@ export function Inspeccion() {
           {consulta.isPending ? "Consultando..." : "Consultar"}
         </button>
       </form>
-
-      {consulta.isError && <MensajeError mensaje={obtenerMensajeError(consulta.error)} />}
 
       {consulta.data && consulta.data.tieneSesionActiva && (
         <p className={`${estilos.resultado} ${estilos.activa}`}>

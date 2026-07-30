@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Estacionamiento Tandil</title>
+    <script>
+      // Aplica el tema guardado antes del primer paint, para no arrancar
+      // en claro y "parpadear" a oscuro un instante despues (ver useTema.ts).
+      (function () {
+        var guardado = localStorage.getItem("estacionamiento_tema");
+        if (guardado === "oscuro") document.documentElement.setAttribute("data-theme", "dark");
+        else if (guardado === "claro") document.documentElement.setAttribute("data-theme", "light");
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,17 +1,17 @@
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
+import { useToasts } from "../contextos/contextoToasts";
 import { obtenerMensajeError } from "../api/errores";
-import { MensajeError } from "../componentes/MensajeError";
 import estilos from "./FormularioAuth.module.css";
 
 export function Registro() {
   const { estaAutenticado, registrarse, cargando } = useAutenticacion();
+  const { mostrarExito, mostrarError } = useToasts();
   const navegar = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [dni, setDni] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
   if (estaAutenticado) {
     return <Navigate to="/" replace />;
@@ -19,12 +19,12 @@ export function Registro() {
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
-    setError(null);
     try {
       await registrarse({ username, password, dni });
+      mostrarExito(`¡Cuenta creada! Bienvenido/a, ${username}.`);
       navegar("/", { replace: true });
     } catch (err) {
-      setError(obtenerMensajeError(err));
+      mostrarError(obtenerMensajeError(err));
     }
   }
 
@@ -65,7 +65,6 @@ export function Registro() {
             inputMode="numeric"
           />
         </label>
-        <MensajeError mensaje={error} />
         <button type="submit" className={estilos.enviar} disabled={cargando}>
           {cargando ? "Creando cuenta..." : "Crear cuenta"}
         </button>

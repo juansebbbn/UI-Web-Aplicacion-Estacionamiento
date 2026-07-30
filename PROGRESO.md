@@ -5,46 +5,41 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 5, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 6, 2026-07-30)
 
-**Todo el alcance imprescindible (v1) de la especificación original está
-completo.** Las tres vistas (USUARIO, INSPECTOR, ADMINISTRADOR), el manejo de
-errores RFC 7807, y el empaquetado Docker/nginx — ver Iteración 5 para el
-detalle de esto último. Lo que funciona, todo verificado contra el backend
-real (no solo compilado): registro, login, logout, refresh automático de
-token; dashboard USUARIO con saldo y mapa de zonas; alta/listado/baja de
-vehículos; iniciar sesión de estacionamiento (vehículo + click en el mapa o
-geolocalización + verificación de zona); finalizar sesión con monto cobrado;
-historial propio; vista pública de líneas; inspección de patente por
-INSPECTOR; panel ADMINISTRADOR (CRUD de líneas, transferencia de titularidad,
-tabla paginada de sesiones); y el build de producción (`docker compose up
---build`, nginx sirviendo el estático) hablando con el backend real. Además
-hay un **modo demo** dev-only para navegar cualquier rol sin backend (ver
-Iteración 4), confirmado ausente del bundle de producción.
+**Todo el alcance imprescindible (v1) Y los cuatro deseables de la
+especificación original están completos.** Ver Iteración 6 para el detalle
+de los deseables (cronómetro, toasts, Playwright, dark mode). Lo que
+funciona, verificado (backend real para USUARIO/empaquetado; modo demo +
+Playwright versionado para los tres roles y el tema): registro, login,
+logout, refresh automático de token; dashboard USUARIO con saldo, mapa de
+zonas, cronómetro en vivo y costo estimado de la sesión activa;
+alta/listado/baja de vehículos; iniciar/finalizar sesión de estacionamiento;
+historial propio; vista pública de líneas; inspección de patente; panel
+ADMINISTRADOR completo; build de producción con Docker/nginx; toasts de
+éxito/error en toda la app; y tema claro/oscuro (automático + toggle manual
+persistente). Modo demo dev-only, confirmado ausente del bundle de
+producción.
 
-**Imprescindibles (v1): nada pendiente.**
+**Imprescindibles (v1) y deseables: nada pendiente.**
 
-**Deseables (si da el tiempo), sin empezar:**
-- [ ] Cronómetro en vivo del tiempo/costo estimado de la sesión activa
-      (calculado en el cliente a partir de `horaInicio` y la tarifa de zona;
-      hoy `DashboardUsuario` solo muestra la hora de inicio, sin costo
-      corriendo en vivo).
-- [ ] Toasts de éxito/error en vez del banner `MensajeError` actual (que
-      sigue siendo el único mecanismo de feedback en todas las páginas).
-- [ ] Tests E2E con Playwright versionados en el repo. Se verificó a mano
-      contra el backend real (Iteraciones 2 y 3) y contra el modo demo
-      (Iteración 4), pero esos scripts quedaron en el scratchpad de la
-      sesión de trabajo, no como suite en el repo.
-- [ ] Dark mode: hoy solo hay `@media (prefers-color-scheme: dark)` parcial
-      en algunos CSS Modules, sin cobertura completa ni toggle manual.
-
-**Deuda de testing:** los únicos tests automatizados hoy son de `src/api/`
-(`almacenTokens.test.ts`, `errores.test.ts`). No hay ningún test de
-componentes ni de páginas (`Login`, `Registro`, `DashboardUsuario`,
-`Vehiculos`, `Historial`, `Lineas`, `Inspeccion`, `Administracion`, `Layout`,
-`RutaProtegida`, `MapaZonas`, `PanelModoDemo`) todavía — todo lo de UI se
-verificó manualmente con Playwright, no con Vitest/RTL. Tampoco hay test de
-`fixturesDemo.ts`/`modoDemo.ts` (el adapter que sirve el modo demo).
+**Lo único que queda, y es deuda pre-existente (no un deseable de la spec):**
+- [ ] **Tests de componentes/páginas con Vitest + React Testing Library.**
+      Los únicos tests automatizados fuera de Playwright siguen siendo los
+      de `src/api/` (`almacenTokens.test.ts`, `errores.test.ts`). Ninguna
+      página ni componente (`Login`, `Registro`, `DashboardUsuario`,
+      `Vehiculos`, `Historial`, `Lineas`, `Inspeccion`, `Administracion`,
+      `Layout`, `RutaProtegida`, `MapaZonas`, `PanelModoDemo`,
+      `ProveedorToasts`, `ConmutadorTema`) tiene test unitario/de
+      integración con RTL — toda la cobertura de UI hoy es Playwright (E2E,
+      ver `e2e/`) más verificación manual. No es necesariamente un problema
+      (el E2E contra el modo demo cubre los flujos reales de punta a punta),
+      pero si se agregan más componentes con lógica no trivial (branching,
+      cálculos) valdría la pena sumar tests unitarios puntuales en vez de
+      seguir apoyándose solo en E2E.
+- [ ] Tampoco hay test unitario de `fixturesDemo.ts`/`modoDemo.ts` en sí
+      mismos (se validan indirectamente porque el E2E los usa como
+      "backend").
 
 **Sobre el modo demo (ver Iteración 4 para el detalle técnico):** es una
 herramienta de desarrollo, no un requisito de la especificación. Sirve datos
@@ -387,3 +382,86 @@ mobile.
   la spec solo pide que la URL sea "configurable vía variable de entorno",
   y Vite ya cumple eso en build time. Agregar inyección en runtime sería
   resolver un problema que nadie pidió.
+
+## Iteración 6 — 2026-07-30
+
+**Qué se hizo (los cuatro deseables de la especificación):**
+
+- **Cronómetro en vivo**: `src/utils/useTiempoTranscurrido.ts` (hook con
+  `setInterval` de 1s) + `formatearDuracion()` en `utils/formato.ts`
+  (mm:ss / hh:mm:ss). `DashboardUsuario` muestra el cronómetro y un "costo
+  estimado" (`minutos transcurridos × tarifaPorMinuto` de la zona, buscada
+  por nombre en `zonas.data` ya que `SesionRespuesta` no trae el id de
+  zona), aclarando explícitamente que el monto final lo calcula el
+  servidor — para no dar la impresión de que el número mostrado es
+  autoritativo.
+- **Toasts**: `src/contextos/ProveedorToasts.tsx` + `contextoToasts.ts`
+  (mismo patrón contexto/hook separado que `ContextoAutenticacion`, por el
+  warning de fast-refresh ya conocido de la Iteración 2). Reemplazan el
+  `MensajeError` que estaba pegado a cada formulario/botón (login, registro,
+  alta/baja de vehículo, iniciar/finalizar sesión, CRUD de líneas,
+  transferencia de titularidad, inspección) por notificaciones flotantes
+  (4s, con botón de cierre manual). **`MensajeError` no desapareció**: se
+  mantuvo a propósito para los errores de carga de datos de `useQuery`
+  (perfil, zonas, vehículos, sesiones, líneas) — un toast que desaparece
+  solo mientras la página se queda sin datos y sin ninguna explicación
+  visible sería peor UX que un banner persistente. Es una desviación
+  deliberada de la redacción literal del deseable ("en vez del banner"),
+  documentada acá en vez de aplicada a ciegas.
+- **Dark mode completo**: se centralizó toda la paleta como variables CSS
+  (`--color-*`) en `src/index.css`, con tres bloques (`:root` para
+  `prefers-color-scheme: light`, `@media (prefers-color-scheme: dark)`, y
+  `:root[data-theme="dark"]` / `:root[data-theme="light"]` para el toggle
+  manual) en vez de un bloque `@media (prefers-color-scheme: dark)`
+  duplicado por CSS Module (que era el estado post-Iteración 5). Todos los
+  CSS Modules migrados a `var(--color-*)`. `src/utils/useTema.ts`
+  (claro/oscuro/sistema, persistido en `localStorage`) +
+  `src/componentes/ConmutadorTema.tsx` (botón fijo, monta una sola vez en
+  `App.tsx`, visible en toda la app incluyendo login/registro). Script
+  inline en `index.html` que aplica el tema guardado antes del primer
+  paint, para no arrancar en claro y parpadear a oscuro un instante
+  después.
+- **Tests E2E con Playwright versionados**: `@playwright/test` +
+  `playwright.config.ts` (levanta `npm run dev` solo) + `e2e/` con specs
+  para los tres roles (`usuario.spec.ts`, `inspector.spec.ts`,
+  `administrador.spec.ts`) y el tema (`tema.spec.ts`), todos corriendo
+  contra el **modo demo** — cero dependencia de backend/MySQL/Docker, lo
+  que los hace viables para correr siempre, no solo cuando hay
+  infraestructura levantada. `npm run test:e2e`.
+- **Se encontró y corrigió un problema real al armar la suite**: Vitest
+  intentaba correr los specs de `e2e/` como si fueran suyos (mismo nombre
+  de convención `*.spec.ts`) y fallaban por usar el `test`/`expect` de
+  `@playwright/test`. Se agregó `exclude: ["**/e2e/**"]` a la config de
+  Vitest en `vite.config.ts`.
+
+**Verificación:**
+- `npm run test:e2e`: 9/9 tests en verde (dashboard con mapa, alta/baja de
+  vehículo con toasts, iniciar→cronómetro→finalizar→toast→historial,
+  inspección de patente genérica y `"LIBRE"`, CRUD de líneas con toast,
+  transferencia de titularidad con toast, paginación de sesiones, y el
+  ciclo completo del conmutador de tema incluyendo persistencia tras
+  recargar la página).
+- Revisión visual manual con capturas en dark mode (login, dashboard con
+  sesión activa/cronómetro/toast, vehículos, admin): buen contraste en
+  todos los casos, sin texto ilegible.
+- `npm run build` + `grep` sobre `dist/assets/*.js`: el modo demo sigue
+  completamente ausente del bundle de producción después de todo este
+  refactor (mismo chequeo que en la Iteración 5).
+- `tsc -b`, `oxlint` y `npm test` (Vitest, ahora sin pisarse con Playwright)
+  en verde.
+
+**Decisiones importantes tomadas:**
+- Se detectó a tiempo un error de diseño de color: la primera versión
+  reutilizaba el token pensado para "texto de banner de éxito" (oscuro,
+  para leerse sobre un fondo verde claro) como color de texto suelto sobre
+  el fondo normal de la página (`.dentroDeZona` en el dashboard) — en dark
+  mode esto daba verde oscuro sobre fondo casi negro, ilegible. Se separó
+  en dos tokens: `--color-exito` (vívido, para texto/íconos sueltos) y
+  `--color-exito-fondo`/`--color-exito-texto`/`--color-exito-borde` (para
+  banners con fondo tintado). Se encontró revisando la paleta antes de
+  darla por buena, no en una captura de pantalla después.
+- Los toasts de éxito se agregaron también donde antes no había ningún
+  feedback de éxito visible (alta/baja de vehículo, iniciar sesión, CRUD de
+  líneas, transferencia de titularidad): no era estrictamente parte del
+  pedido ("reemplazar MensajeError"), pero es la misma categoría de
+  feedback de acción y hubiese sido inconsistente no cubrirlo.

@@ -5,8 +5,8 @@ import { transferirTitularidad } from "../api/vehiculos";
 import { listarTodasLasSesiones } from "../api/sesiones";
 import { obtenerMensajeError } from "../api/errores";
 import { MensajeError } from "../componentes/MensajeError";
+import { useToasts } from "../contextos/contextoToasts";
 import { formatearFecha, formatearMonto } from "../utils/formato";
-import type { LineaRespuesta } from "../tipos/linea";
 import estilos from "./Administracion.module.css";
 
 export function Administracion() {
@@ -22,65 +22,54 @@ export function Administracion() {
 
 function SeccionLineas() {
   const queryClient = useQueryClient();
+  const { mostrarExito, mostrarError } = useToasts();
   const lineas = useQuery({ queryKey: ["lineas"], queryFn: listarLineas });
 
   const [numero, setNumero] = useState("");
   const [nombre, setNombre] = useState("");
   const [color, setColor] = useState("#1a5fb4");
   const [edicion, setEdicion] = useState<{ id: number; nombre: string; color: string } | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const crear = useMutation({
     mutationFn: crearLinea,
-    onSuccess: () => {
+    onSuccess: (linea) => {
       setNumero("");
       setNombre("");
+      mostrarExito(`Línea ${linea.numero} creada.`);
       queryClient.invalidateQueries({ queryKey: ["lineas"] });
     },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
   const actualizar = useMutation({
     mutationFn: ({ id, datos }: { id: number; datos: { nombre: string; color: string } }) =>
       actualizarLinea(id, datos),
-    onSuccess: () => {
+    onSuccess: (linea) => {
       setEdicion(null);
+      mostrarExito(`Línea ${linea.numero} actualizada.`);
       queryClient.invalidateQueries({ queryKey: ["lineas"] });
     },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
   const eliminar = useMutation({
     mutationFn: eliminarLinea,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["lineas"] }),
+    onSuccess: () => {
+      mostrarExito("Línea eliminada.");
+      queryClient.invalidateQueries({ queryKey: ["lineas"] });
+    },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
-  async function manejarCrear(evento: FormEvent) {
+  function manejarCrear(evento: FormEvent) {
     evento.preventDefault();
-    setError(null);
-    try {
-      await crear.mutateAsync({ numero: Number(numero), nombre, color });
-    } catch (err) {
-      setError(obtenerMensajeError(err));
-    }
+    crear.mutate({ numero: Number(numero), nombre, color });
   }
 
-  async function manejarActualizar(evento: FormEvent) {
+  function manejarActualizar(evento: FormEvent) {
     evento.preventDefault();
     if (!edicion) return;
-    setError(null);
-    try {
-      await actualizar.mutateAsync({ id: edicion.id, datos: { nombre: edicion.nombre, color: edicion.color } });
-    } catch (err) {
-      setError(obtenerMensajeError(err));
-    }
-  }
-
-  async function manejarEliminar(linea: LineaRespuesta) {
-    setError(null);
-    try {
-      await eliminar.mutateAsync(linea.id);
-    } catch (err) {
-      setError(obtenerMensajeError(err));
-    }
+    actualizar.mutate({ id: edicion.id, datos: { nombre: edicion.nombre, color: edicion.color } });
   }
 
   return (
@@ -115,7 +104,6 @@ function SeccionLineas() {
           {crear.isPending ? "Creando..." : "Crear línea"}
         </button>
       </form>
-      <MensajeError mensaje={error} />
 
       {lineas.isPending && <p>Cargando líneas…</p>}
       {lineas.isError && <MensajeError mensaje={obtenerMensajeError(lineas.error)} />}
@@ -165,7 +153,7 @@ function SeccionLineas() {
                   <button
                     type="button"
                     className={estilos.botonPeligro}
-                    onClick={() => manejarEliminar(linea)}
+                    onClick={() => eliminar.mutate(linea.id)}
                     disabled={eliminar.isPending}
                   >
                     Eliminar
@@ -181,27 +169,23 @@ function SeccionLineas() {
 }
 
 function SeccionTitularidad() {
+  const { mostrarExito, mostrarError } = useToasts();
   const [patente, setPatente] = useState("");
   const [nuevoUsuarioUsername, setNuevoUsuarioUsername] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [exito, setExito] = useState<string | null>(null);
 
   const transferir = useMutation({
     mutationFn: () => transferirTitularidad(patente.toUpperCase(), { nuevoUsuarioUsername }),
-  });
-
-  async function manejarEnvio(evento: FormEvent) {
-    evento.preventDefault();
-    setError(null);
-    setExito(null);
-    try {
-      await transferir.mutateAsync();
-      setExito(`Vehículo ${patente.toUpperCase()} transferido a ${nuevoUsuarioUsername}.`);
+    onSuccess: () => {
+      mostrarExito(`Vehículo ${patente.toUpperCase()} transferido a ${nuevoUsuarioUsername}.`);
       setPatente("");
       setNuevoUsuarioUsername("");
-    } catch (err) {
-      setError(obtenerMensajeError(err));
-    }
+    },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
+  });
+
+  function manejarEnvio(evento: FormEvent) {
+    evento.preventDefault();
+    transferir.mutate();
   }
 
   return (
@@ -224,8 +208,6 @@ function SeccionTitularidad() {
           {transferir.isPending ? "Transfiriendo..." : "Transferir"}
         </button>
       </form>
-      {exito && <p className={estilos.resultadoExito}>{exito}</p>}
-      <MensajeError mensaje={error} />
     </div>
   );
 }

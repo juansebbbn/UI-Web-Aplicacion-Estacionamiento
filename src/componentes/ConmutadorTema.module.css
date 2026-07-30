@@ -1,0 +1,13 @@
+.boton {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 900;
+  padding: 6px 10px;
+  border: 1px solid var(--color-borde-input);
+  border-radius: 6px;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  cursor: pointer;
+  font-size: 0.85rem;
+}

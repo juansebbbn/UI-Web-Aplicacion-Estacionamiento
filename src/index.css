@@ -4,16 +4,114 @@
   box-sizing: border-box;
 }
 
+/*
+ * Tokens de color centralizados: todo CSS Module de la app usa var(--color-*)
+ * en vez de valores hardcodeados. Así el dark mode (automático por
+ * prefers-color-scheme y manual por el toggle, ver ConmutadorTema.tsx) se
+ * resuelve en un solo lugar en vez de duplicar un bloque
+ * `@media (prefers-color-scheme: dark)` en cada módulo.
+ *
+ * `[data-theme]` lo pone useTema.ts en <html> cuando el usuario elige modo
+ * claro/oscuro a mano; sin el atributo (modo "sistema") manda la media query.
+ */
 :root {
   color-scheme: light dark;
   font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-texto: #1a1a1a;
+  --color-fondo: #ffffff;
+  --color-borde: #e2e2e2;
+  --color-borde-input: #999999;
+  --color-primario: #1a5fb4;
+  --color-primario-texto: #ffffff;
+  --color-peligro: #c01c28;
+  --color-exito: #2ec27e;
+  --color-exito-fondo: #e6f7ee;
+  --color-exito-texto: #14532d;
+  --color-exito-borde: #b7e4c7;
+  --color-error-fondo: #fdecea;
+  --color-error-texto: #611a15;
+  --color-error-borde: #f5c6c0;
+  --color-inactivo-fondo: #f3f3f3;
+  --color-inactivo-texto: #444444;
+  --color-inactivo-borde: #dddddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-texto: #e5e5e5;
+    --color-fondo: #17181c;
+    --color-borde: #333333;
+    --color-borde-input: #666666;
+    --color-primario: #5b9bd9;
+    --color-primario-texto: #0a0a0a;
+    --color-peligro: #ff6b6b;
+    --color-exito: #4fd699;
+    --color-exito-fondo: #123a24;
+    --color-exito-texto: #b7e4c7;
+    --color-exito-borde: #14532d;
+    --color-error-fondo: #3a1a17;
+    --color-error-texto: #f5c6c0;
+    --color-error-borde: #611a15;
+    --color-inactivo-fondo: #24242a;
+    --color-inactivo-texto: #cccccc;
+    --color-inactivo-borde: #3a3a42;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-texto: #e5e5e5;
+  --color-fondo: #17181c;
+  --color-borde: #333333;
+  --color-borde-input: #666666;
+  --color-primario: #5b9bd9;
+  --color-primario-texto: #0a0a0a;
+  --color-peligro: #ff6b6b;
+  --color-exito: #4fd699;
+  --color-exito-fondo: #123a24;
+  --color-exito-texto: #b7e4c7;
+  --color-exito-borde: #14532d;
+  --color-error-fondo: #3a1a17;
+  --color-error-texto: #f5c6c0;
+  --color-error-borde: #611a15;
+  --color-inactivo-fondo: #24242a;
+  --color-inactivo-texto: #cccccc;
+  --color-inactivo-borde: #3a3a42;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-texto: #1a1a1a;
+  --color-fondo: #ffffff;
+  --color-borde: #e2e2e2;
+  --color-borde-input: #999999;
+  --color-primario: #1a5fb4;
+  --color-primario-texto: #ffffff;
+  --color-peligro: #c01c28;
+  --color-exito: #2ec27e;
+  --color-exito-fondo: #e6f7ee;
+  --color-exito-texto: #14532d;
+  --color-exito-borde: #b7e4c7;
+  --color-error-fondo: #fdecea;
+  --color-error-texto: #611a15;
+  --color-error-borde: #f5c6c0;
+  --color-inactivo-fondo: #f3f3f3;
+  --color-inactivo-texto: #444444;
+  --color-inactivo-borde: #dddddd;
 }
 
 body {
   margin: 0;
   min-height: 100svh;
+  background: var(--color-fondo);
+  color: var(--color-texto);
 }
 
 #root {
   min-height: 100svh;
+}
+
+a {
+  color: var(--color-primario);
 }

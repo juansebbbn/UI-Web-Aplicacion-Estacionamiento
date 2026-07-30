@@ -1,14 +1,8 @@
 .seccion {
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--color-borde);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .seccion {
-    border-color: #333;
-  }
 }
 
 .formulario {
@@ -28,24 +22,27 @@
 .campo input {
   padding: 8px 10px;
   font-size: 1rem;
-  border: 1px solid #999;
+  border: 1px solid var(--color-borde-input);
   border-radius: 6px;
+  background: var(--color-fondo);
+  color: var(--color-texto);
 }
 
 .campoColor {
   padding: 2px;
   width: 48px;
   height: 38px;
-  border: 1px solid #999;
+  border: 1px solid var(--color-borde-input);
   border-radius: 6px;
+  background: var(--color-fondo);
 }
 
 .boton {
   padding: 9px 16px;
   border: none;
   border-radius: 6px;
-  background: #1a5fb4;
-  color: #fff;
+  background: var(--color-primario);
+  color: var(--color-primario-texto);
   cursor: pointer;
 }
 
@@ -63,8 +60,8 @@
 .botonPeligro {
   composes: botonChico;
   background: transparent;
-  color: #c01c28;
-  border: 1px solid #c01c28;
+  color: var(--color-peligro);
+  border: 1px solid var(--color-peligro);
 }
 
 .lista {
@@ -80,15 +77,9 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--color-borde);
   border-radius: 8px;
   flex-wrap: wrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .item {
-    border-color: #333;
-  }
 }
 
 .numero {
@@ -122,15 +113,8 @@
 .tabla td {
   text-align: left;
   padding: 8px 10px;
-  border-bottom: 1px solid #e2e2e2;
+  border-bottom: 1px solid var(--color-borde);
   white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .tabla th,
-  .tabla td {
-    border-color: #333;
-  }
 }
 
 .contenedorTabla {
@@ -143,22 +127,4 @@
   gap: 10px;
   margin-top: 10px;
   font-size: 0.9rem;
-}
-
-.resultadoExito {
-  background: #e6f7ee;
-  color: #14532d;
-  border: 1px solid #b7e4c7;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin: 8px 0;
-  font-size: 0.9rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .resultadoExito {
-    background: #123a24;
-    color: #b7e4c7;
-    border-color: #14532d;
-  }
 }

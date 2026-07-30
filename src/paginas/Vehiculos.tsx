@@ -3,48 +3,40 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { darDeAltaVehiculo, eliminarVehiculo, listarVehiculosPropios } from "../api/vehiculos";
 import { obtenerMensajeError } from "../api/errores";
 import { MensajeError } from "../componentes/MensajeError";
+import { useToasts } from "../contextos/contextoToasts";
 import type { TipoVehiculo } from "../tipos/vehiculo";
 import estilos from "./Vehiculos.module.css";
 
 export function Vehiculos() {
   const queryClient = useQueryClient();
+  const { mostrarExito, mostrarError } = useToasts();
   const vehiculos = useQuery({ queryKey: ["vehiculos"], queryFn: listarVehiculosPropios });
 
   const [patente, setPatente] = useState("");
   const [tipo, setTipo] = useState<TipoVehiculo>("AUTO");
-  const [errorAlta, setErrorAlta] = useState<string | null>(null);
-  const [errorBaja, setErrorBaja] = useState<string | null>(null);
 
   const alta = useMutation({
     mutationFn: darDeAltaVehiculo,
-    onSuccess: () => {
+    onSuccess: (vehiculo) => {
       setPatente("");
+      mostrarExito(`Vehículo ${vehiculo.patente} agregado.`);
       queryClient.invalidateQueries({ queryKey: ["vehiculos"] });
     },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
   const baja = useMutation({
     mutationFn: eliminarVehiculo,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["vehiculos"] }),
+    onSuccess: (_datos, patenteEliminada) => {
+      mostrarExito(`Vehículo ${patenteEliminada} eliminado.`);
+      queryClient.invalidateQueries({ queryKey: ["vehiculos"] });
+    },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
 
-  async function manejarAlta(evento: FormEvent) {
+  function manejarAlta(evento: FormEvent) {
     evento.preventDefault();
-    setErrorAlta(null);
-    try {
-      await alta.mutateAsync({ patente: patente.toUpperCase(), tipo });
-    } catch (err) {
-      setErrorAlta(obtenerMensajeError(err));
-    }
-  }
-
-  async function manejarBaja(patenteAEliminar: string) {
-    setErrorBaja(null);
-    try {
-      await baja.mutateAsync(patenteAEliminar);
-    } catch (err) {
-      setErrorBaja(obtenerMensajeError(err));
-    }
+    alta.mutate({ patente: patente.toUpperCase(), tipo });
   }
 
   return (
@@ -73,7 +65,6 @@ export function Vehiculos() {
           {alta.isPending ? "Agregando..." : "Agregar vehículo"}
         </button>
       </form>
-      <MensajeError mensaje={errorAlta} />
 
       {vehiculos.isPending && <p>Cargando vehículos…</p>}
       {vehiculos.isError && <MensajeError mensaje={obtenerMensajeError(vehiculos.error)} />}
@@ -89,7 +80,7 @@ export function Vehiculos() {
               <button
                 type="button"
                 className={estilos.botonEliminar}
-                onClick={() => manejarBaja(vehiculo.patente)}
+                onClick={() => baja.mutate(vehiculo.patente)}
                 disabled={baja.isPending}
               >
                 Eliminar
@@ -98,7 +89,6 @@ export function Vehiculos() {
           ))}
         </ul>
       )}
-      <MensajeError mensaje={errorBaja} />
     </section>
   );
 }

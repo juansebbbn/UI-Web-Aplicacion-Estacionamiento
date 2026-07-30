@@ -16,16 +16,18 @@
 .campo select {
   padding: 8px 10px;
   font-size: 1rem;
-  border: 1px solid #999;
+  border: 1px solid var(--color-borde-input);
   border-radius: 6px;
+  background: var(--color-fondo);
+  color: var(--color-texto);
 }
 
 .botonAgregar {
   padding: 9px 16px;
   border: none;
   border-radius: 6px;
-  background: #1a5fb4;
-  color: #fff;
+  background: var(--color-primario);
+  color: var(--color-primario-texto);
   cursor: pointer;
 }
 
@@ -48,20 +50,14 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
-  border: 1px solid #e2e2e2;
+  border: 1px solid var(--color-borde);
   border-radius: 8px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .item {
-    border-color: #333;
-  }
 }
 
 .botonEliminar {
   padding: 6px 12px;
-  border: 1px solid #c01c28;
-  color: #c01c28;
+  border: 1px solid var(--color-peligro);
+  color: var(--color-peligro);
   background: transparent;
   border-radius: 6px;
   cursor: pointer;

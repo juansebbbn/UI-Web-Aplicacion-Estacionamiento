@@ -1,16 +1,8 @@
 .mensaje {
-  background: #fdecea;
-  color: #611a15;
-  border: 1px solid #f5c6c0;
+  background: var(--color-error-fondo);
+  color: var(--color-error-texto);
+  border: 1px solid var(--color-error-borde);
   border-radius: 6px;
   padding: 10px 14px;
   font-size: 0.95rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .mensaje {
-    background: #3a1a17;
-    color: #f5c6c0;
-    border-color: #611a15;
-  }
 }

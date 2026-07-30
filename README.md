@@ -48,7 +48,37 @@ Queda en `http://localhost:8081` (o el puerto que se haya puesto en
 - `npm run build` — build de producción (`tsc -b && vite build`)
 - `npm run preview` — sirve el build de producción localmente
 - `npm run lint` — lint con oxlint
-- `npm test` — tests con Vitest
+- `npm test` — tests unitarios con Vitest
+- `npm run test:e2e` — tests end-to-end con Playwright (ver abajo)
+
+## Modo demo (solo desarrollo)
+
+En `/login`, con `npm run dev`, aparece un panel "Modo demo" con un botón por
+rol (Usuario/Inspector/Administrador): entra con datos ficticios servidos en
+memoria (`src/api/fixturesDemo.ts`), sin necesitar `servidor-estacionamiento`
+ni MySQL corriendo. Útil para revisar UI o correr los tests E2E rápido. Vive
+detrás de `import.meta.env.DEV` en todos los puntos de entrada — confirmado
+ausente del build de producción (`npm run build` + `grep` sobre
+`dist/assets/*.js`, ver `PROGRESO.md`).
+
+## Tests E2E (Playwright)
+
+```bash
+npm run test:e2e
+```
+
+Corren contra `npm run dev` (Playwright lo levanta solo, ver
+`playwright.config.ts`) usando el modo demo — no necesitan backend ni Docker.
+Cubren los tres roles (`e2e/usuario.spec.ts`, `e2e/inspector.spec.ts`,
+`e2e/administrador.spec.ts`) y el conmutador de tema (`e2e/tema.spec.ts`).
+
+## Tema claro/oscuro
+
+Sigue `prefers-color-scheme` por default; el botón fijo abajo a la izquierda
+("Tema: ...") permite forzar claro u oscuro, persistido en `localStorage`. La
+paleta vive centralizada como variables CSS en `src/index.css`
+(`--color-*`) — cualquier CSS Module nuevo debería usar esas variables en vez
+de colores hardcodeados para no romper el tema oscuro.
 
 ## Estructura
 
@@ -57,7 +87,9 @@ src/
   paginas/      # una por vista/ruta
   componentes/  # reutilizables
   api/          # llamadas HTTP, una por feature del backend
-  contextos/    # estado de sesión/autenticación
+  contextos/    # estado de sesión/autenticación/toasts
   tipos/        # interfaces TS que espejan los DTOs del backend
   rutas/        # definición de rutas protegidas por rol
+  utils/        # formateo, hooks chicos sin estado global (tema, cronómetro)
+e2e/            # tests end-to-end (Playwright), corren contra el modo demo
 ```
