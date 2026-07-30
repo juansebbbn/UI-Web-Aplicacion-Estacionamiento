@@ -9,7 +9,7 @@ test.describe("Flujo INSPECTOR (modo demo)", () => {
     await page.getByPlaceholder("Patente").fill("XYZ999");
     await page.getByRole("button", { name: "Consultar" }).click();
 
-    await expect(page.getByText("tiene una sesión activa")).toBeVisible();
+    await expect(page.getByText("Sesión activa")).toBeVisible();
   });
 
   test('la patente "LIBRE" no tiene sesion activa (regla del fixture demo)', async ({ page }) => {
@@ -18,6 +18,6 @@ test.describe("Flujo INSPECTOR (modo demo)", () => {
     await page.getByPlaceholder("Patente").fill("libre");
     await page.getByRole("button", { name: "Consultar" }).click();
 
-    await expect(page.getByText("no tiene una sesión activa")).toBeVisible();
+    await expect(page.getByText("Sin sesión activa")).toBeVisible();
   });
 });

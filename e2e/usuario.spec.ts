@@ -12,7 +12,7 @@ test.describe("Flujo USUARIO (modo demo)", () => {
     await entrarModoDemo(page, "Usuario");
 
     await expect(page).toHaveURL(/\/estacionamiento$/);
-    await expect(page.getByText("Saldo:")).toBeVisible();
+    await expect(page.getByText("Saldo", { exact: true })).toBeVisible();
     await expect(page.locator(".leaflet-container")).toBeVisible();
   });
 
@@ -25,13 +25,10 @@ test.describe("Flujo USUARIO (modo demo)", () => {
     await page.getByRole("button", { name: "Agregar vehículo" }).click();
 
     await expect(page.getByText("Vehículo E2E1234 agregado.")).toBeVisible();
-    await expect(page.getByText("E2E1234 — Auto")).toBeVisible();
+    const itemVehiculo = page.getByRole("listitem").filter({ hasText: "E2E1234" });
+    await expect(itemVehiculo).toContainText("Auto");
 
-    await page
-      .getByRole("listitem")
-      .filter({ hasText: "E2E1234" })
-      .getByRole("button", { name: "Eliminar" })
-      .click();
+    await itemVehiculo.getByRole("button", { name: "Eliminar" }).click();
 
     await expect(page.getByText("Vehículo E2E1234 eliminado.")).toBeVisible();
   });
@@ -45,10 +42,10 @@ test.describe("Flujo USUARIO (modo demo)", () => {
 
     await page.getByRole("button", { name: "Estacionar acá" }).click();
     await expect(page.getByText("Sesión de estacionamiento iniciada.")).toBeVisible();
-    await expect(page.getByText("Sesión activa")).toBeVisible();
+    await expect(page.getByText("Activa", { exact: true })).toBeVisible();
     // Cronometro en formato mm:ss, actualizandose en vivo.
     await expect(page.getByText(/^\d{2}:\d{2}$/)).toBeVisible();
-    await expect(page.getByText(/Costo estimado:/)).toBeVisible();
+    await expect(page.getByText("Costo estimado")).toBeVisible();
 
     await page.getByRole("button", { name: "Finalizar sesión" }).click();
     await expect(page.getByText(/Sesión de DEMO001 finalizada\. Se cobraron/)).toBeVisible();
