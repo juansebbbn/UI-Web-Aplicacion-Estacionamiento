@@ -5,9 +5,13 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 9, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 10, 2026-07-30)
 
-La Iteración 9 reubicó el acceso de usuario (nombre/roles/logout) al pie
+La Iteración 10 corrigió que "Líneas de colectivo" abriera como una
+página suelta sin sidebar/topbar al clickearla desde el nav estando
+logueado — ahora se abre dentro del Layout normal, al lado del sidebar,
+sin perder el acceso público sin cuenta. Ver esa iteración para el
+detalle. La Iteración 9 reubicó el acceso de usuario (nombre/roles/logout) al pie
 del sidebar y el toggle de tema a la topbar (antes al revés: usuario en
 la topbar, toggle flotante fijo). De paso se encontró y corrigió un bug
 real de layout en desktop (el sidebar se estiraba con el alto del
@@ -642,3 +646,30 @@ el toggle por `role="radio"` + `title`, no por posición). Revisión visual
 manual en desktop (1400×900, claro/oscuro, con y sin scroll) y mobile
 (390×844, drawer abierto): el pie del sidebar queda visible y anclado en
 los tres casos.
+
+## Iteración 10 — 2026-07-30
+
+**Qué se hizo:** "/lineas" es pública desde la Iteración 3 (para que
+alguien sin cuenta pueda ver las líneas de colectivo), y por eso vivía
+fuera del árbol de rutas envuelto por `Layout` — al clickear el link
+"Líneas de colectivo" del sidebar estando logueado, la navegación
+saltaba a esa página suelta, sin sidebar ni topbar, con su propio fondo
+de página. El usuario lo reportó como "una página toda en negro de
+fondo" en dark mode (el salto de contexto, no un bug de color).
+
+Se agregó `src/componentes/EnvoltorioLineas.tsx`: decide en base a
+`estaAutenticado` si envolver la ruta `/lineas` con el `Layout` de
+siempre (sidebar + topbar, mismo look que el resto de la app) o con un
+wrapper standalone liviano (mismo patrón que `LayoutPublico` de
+login/registro: fondo de página + `ConmutadorTema` flotante) para
+visitantes sin sesión. `Lineas.tsx` se simplificó para no traer su
+propio fondo/contenedor (eso ahora lo decide el wrapper correspondiente)
+y el link "Volver" quedó condicionado a `!estaAutenticado` (con sesión,
+la navegación del sidebar ya cubre eso). El query público de líneas y el
+acceso sin cuenta no cambiaron.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (9/9) en verde sin tocar specs. Revisión visual manual:
+logueado, "/lineas" se ve con sidebar/topbar completos en claro y
+oscuro; sin sesión, sigue siendo la página standalone con "← Volver"
+apuntando a `/login`.
