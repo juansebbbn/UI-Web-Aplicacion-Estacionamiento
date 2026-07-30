@@ -8,7 +8,9 @@ import { DashboardUsuario } from "./paginas/DashboardUsuario";
 import { Vehiculos } from "./paginas/Vehiculos";
 import { Historial } from "./paginas/Historial";
 import { Lineas } from "./paginas/Lineas";
-import { ROL_USUARIO } from "./tipos/roles";
+import { Inspeccion } from "./paginas/Inspeccion";
+import { Administracion } from "./paginas/Administracion";
+import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "./tipos/roles";
 
 function App() {
   return (
@@ -46,6 +48,22 @@ function App() {
           element={
             <RutaProtegida rolRequerido={ROL_USUARIO}>
               <Historial />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/inspeccion"
+          element={
+            <RutaProtegida rolRequerido={ROL_INSPECTOR}>
+              <Inspeccion />
+            </RutaProtegida>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <RutaProtegida rolRequerido={ROL_ADMINISTRADOR}>
+              <Administracion />
             </RutaProtegida>
           }
         />

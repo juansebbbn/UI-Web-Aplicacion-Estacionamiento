@@ -10,10 +10,17 @@ export const cliente = axios.create({ baseURL: URL_BASE });
 // a si misma en un loop si /auth/refrescar tambien devolviera 401.
 const clienteSinInterceptores = axios.create({ baseURL: URL_BASE });
 
-cliente.interceptors.request.use((config) => {
+cliente.interceptors.request.use(async (config) => {
   const sesion = leerSesion();
   if (sesion?.accessToken) {
     config.headers.Authorization = `Bearer ${sesion.accessToken}`;
+  }
+  // Modo demo (ver modoDemo.ts): nunca pega contra el backend real, un
+  // adapter le sirve datos ficticios. Import dinamico para que Vite pueda
+  // sacar fixturesDemo.ts del bundle de produccion.
+  if (import.meta.env.DEV && sesion?.demo) {
+    const { adaptadorDemo } = await import("./fixturesDemo");
+    config.adapter = adaptadorDemo;
   }
   return config;
 });

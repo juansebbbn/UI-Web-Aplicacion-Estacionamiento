@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
 import { obtenerMensajeError } from "../api/errores";
 import { MensajeError } from "../componentes/MensajeError";
+import { PanelModoDemo } from "../componentes/PanelModoDemo";
 import estilos from "./FormularioAuth.module.css";
 
 export function Login() {
@@ -58,6 +59,7 @@ export function Login() {
       <p className={estilos.enlaceAlternativo}>
         ¿No tenés cuenta? <Link to="/registro">Registrate</Link>
       </p>
+      {import.meta.env.DEV && <PanelModoDemo />}
     </div>
   );
 }

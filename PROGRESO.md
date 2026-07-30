@@ -5,39 +5,25 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 3, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 4, 2026-07-30)
 
-Lo que ya funciona, probado contra el backend real (incluye el flujo
-principal de USUARIO completo): registro, login, logout, refresh automático
-de token, dashboard con saldo y mapa de zonas, alta/listado/baja de
-vehículos, iniciar sesión de estacionamiento (elegir vehículo + click en el
-mapa o geolocalización + verificación de zona), finalizar sesión con monto
-cobrado, historial de sesiones propias, y la vista pública de líneas de
-colectivo (sin login).
+**Las tres vistas imprescindibles de la especificación (USUARIO, INSPECTOR,
+ADMINISTRADOR) ya están implementadas** y verificadas — USUARIO e INSPECTOR/
+ADMINISTRADOR con métodos distintos, ver Iteración 4. Lo que ya funciona:
+registro, login, logout, refresh automático de token; dashboard USUARIO con
+saldo y mapa de zonas; alta/listado/baja de vehículos; iniciar sesión de
+estacionamiento (vehículo + click en el mapa o geolocalización + verificación
+de zona); finalizar sesión con monto cobrado; historial propio; vista pública
+de líneas; inspección de patente por INSPECTOR; y panel ADMINISTRADOR (CRUD
+de líneas, transferencia de titularidad, tabla paginada de sesiones). Además
+hay un **modo demo** dev-only para navegar cualquier rol sin backend (ver
+Iteración 4).
 
 **Imprescindibles (v1) sin hacer:**
-- [ ] **Vista INSPECTOR**: pantalla con un campo de patente que llame a
-      `GET /sesiones/inspeccion/{patente}` y muestre si tiene sesión activa
-      y desde cuándo (sin datos del dueño). `src/api/sesiones.ts` ya tiene
-      `inspeccionarPatente()`, pero no hay página. Hoy un usuario
-      solo-INSPECTOR ve el placeholder genérico de `Inicio.tsx`. **Ojo con
-      el nombre de rol real**: es `ROL_INSPECTOR` = `"ROLE_INSPECTOR"` (ver
-      `src/tipos/roles.ts` y el hallazgo de la Iteración 2), no `"INSPECTOR"`
-      a secas.
-- [ ] **Vista ADMINISTRADOR**: CRUD de líneas (`POST`/`PUT`/`DELETE
-      /lineas`), transferencia de titularidad de un vehículo
-      (`PUT /vehiculos/{patente}/titularidad`) y tabla paginada de todas las
-      sesiones (`GET /sesiones/admin?page&size&sort`, usar
-      `listarTodasLasSesiones()` de `src/api/sesiones.ts`, que ya devuelve
-      `Pagina<SesionRespuesta>`). Nada de esto tiene página todavía. Mismo
-      cuidado con el rol: `ROL_ADMINISTRADOR` = `"ROLE_ADMINISTRADOR"`.
-      **No hay ningún usuario ADMINISTRADOR/INSPECTOR de prueba** — el
-      registro público siempre crea `ROLE_USUARIO`; para probar estas dos
-      vistas manualmente hay que asignar el rol a mano en la tabla
-      `usuario_rol` (o como corresponda) de la base, no hay endpoint.
 - [ ] **Empaquetado**: Dockerfile + build estático servido con nginx (la
       spec lo pide para alinear con el `docker-compose.yml` del backend). No
-      se creó todavía.
+      se creó todavía. Es lo único que queda del alcance imprescindible de
+      la especificación original.
 
 **Deseables (si da el tiempo), sin empezar:**
 - [ ] Cronómetro en vivo del tiempo/costo estimado de la sesión activa
@@ -46,20 +32,30 @@ colectivo (sin login).
       corriendo en vivo).
 - [ ] Toasts de éxito/error en vez del banner `MensajeError` actual (que
       sigue siendo el único mecanismo de feedback en todas las páginas).
-- [ ] Tests E2E con Playwright de iniciar/finalizar sesión. Se verificó el
-      flujo completo (incluido iniciar/finalizar) a mano contra el backend
-      real en las Iteraciones 2 y 3, pero esos scripts quedaron en el
-      scratchpad de la sesión de trabajo, no como suite versionada en el
-      repo.
+- [ ] Tests E2E con Playwright versionados en el repo. Se verificó a mano
+      contra el backend real (Iteraciones 2 y 3) y contra el modo demo
+      (Iteración 4), pero esos scripts quedaron en el scratchpad de la
+      sesión de trabajo, no como suite en el repo.
 - [ ] Dark mode: hoy solo hay `@media (prefers-color-scheme: dark)` parcial
       en algunos CSS Modules, sin cobertura completa ni toggle manual.
 
 **Deuda de testing:** los únicos tests automatizados hoy son de `src/api/`
 (`almacenTokens.test.ts`, `errores.test.ts`). No hay ningún test de
 componentes ni de páginas (`Login`, `Registro`, `DashboardUsuario`,
-`Vehiculos`, `Historial`, `Lineas`, `Layout`, `RutaProtegida`, `MapaZonas`)
-todavía — todo lo de UI se verificó manualmente con Playwright contra el
-backend real, no con Vitest/RTL.
+`Vehiculos`, `Historial`, `Lineas`, `Inspeccion`, `Administracion`, `Layout`,
+`RutaProtegida`, `MapaZonas`, `PanelModoDemo`) todavía — todo lo de UI se
+verificó manualmente con Playwright, no con Vitest/RTL. Tampoco hay test de
+`fixturesDemo.ts`/`modoDemo.ts` (el adapter que sirve el modo demo).
+
+**Sobre el modo demo (ver Iteración 4 para el detalle técnico):** es una
+herramienta de desarrollo, no un requisito de la especificación. Sirve datos
+ficticios desde `src/api/fixturesDemo.ts` en vez de pegarle al backend real
+cuando la sesión tiene `demo: true`. Vive detrás de `import.meta.env.DEV` en
+todos los puntos de entrada (`modoDemo.ts`, `cliente.ts`, `Login.tsx`), así
+que Vite lo saca del bundle en `vite build` (producción) — pero **si algún
+día se agrega un endpoint nuevo, hay que agregar también su fixture en
+`fixturesDemo.ts`** o el modo demo va a rechazar esa llamada con un error de
+"no hay fixture para X" en vez de fallar silenciosamente.
 
 **Deuda menor detectada en el camino (no bloqueante):**
 - [ ] `DashboardUsuario` no tiene forma de "cancelar" una coordenada ya
@@ -262,3 +258,80 @@ mobile.
   `ROLE_USUARIO`. Cuando se construyan esas páginas (próxima iteración) va
   a hacer falta asignar esos roles a mano en la base para poder
   verificarlas end-to-end como se hizo con USUARIO.
+
+## Iteración 4 — 2026-07-30
+
+**Qué se hizo:**
+- `src/paginas/Inspeccion.tsx`: campo de patente + `GET /sesiones/inspeccion/{patente}`
+  (vía `useMutation`, no `useQuery`, porque es una consulta on-demand
+  disparada por el usuario, no algo para cachear por key estable). Muestra
+  sesión activa (con hora de inicio) o "no tiene sesión activa", sin ningún
+  dato del dueño (el backend ya no lo expone).
+- `src/paginas/Administracion.tsx`: panel con tres secciones independientes
+  (`SeccionLineas`, `SeccionTitularidad`, `SeccionSesiones`, como
+  subcomponentes internos del mismo archivo — no hay reuso fuera de esta
+  página, no ameritaba separarlos): CRUD completo de líneas (alta, edición
+  inline de nombre/color, baja — el número queda fijo, es inmutable en el
+  backend), transferencia de titularidad de un vehículo, y tabla paginada de
+  `GET /sesiones/admin` con controles anterior/siguiente basados en
+  `pagina.first`/`pagina.last`.
+- `Inicio.tsx` extendido: cada rol va directo a su sección (USUARIO →
+  `/estacionamiento`, INSPECTOR → `/inspeccion`, ADMINISTRADOR → `/admin`,
+  prioridad arbitraria si hay más de uno).
+- `App.tsx` y `Layout.tsx`: rutas `/inspeccion` y `/admin` (protegidas por
+  rol) y sus links de nav condicionales.
+- **Modo demo** (pedido explícito del usuario: "agrega una auth falsa para
+  poder ir viendo la ui"): sin esto, probar INSPECTOR/ADMINISTRADOR requiere
+  asignar el rol a mano en la base (ver Iteración 3) — no viable para ir
+  iterando la UI rápido. Piezas nuevas:
+  - `src/api/almacenTokens.ts`: `SesionAlmacenada` gana un campo opcional
+    `demo?: boolean`; `guardarSesion()` acepta `{ demo }`.
+  - `src/api/modoDemo.ts`: `activarModoDemo(rol)` guarda una sesión falsa
+    (mismo mecanismo que un login real, así que `ContextoAutenticacion` la
+    recoge solo, sin cambios) marcada `demo: true`. No hace nada si
+    `!import.meta.env.DEV`.
+  - `src/api/fixturesDemo.ts`: un `AxiosAdapter` a medida (`adaptadorDemo`)
+    que reemplaza al adapter real de Axios cuando la sesión es demo, con
+    datos en memoria (vehículos, sesiones, líneas, zonas — la zona real de
+    Tandil más una inventada) que se van mutando con las llamadas de alta/
+    baja/iniciar/finalizar, como un backend de juguete. La verificación de
+    zona en modo demo siempre da positivo (no se reimplementó
+    point-in-polygon: no vale la pena solo para una vista previa visual).
+  - `cliente.ts`: el interceptor de request pasó a ser `async` y, si la
+    sesión es demo (y `import.meta.env.DEV`), hace `import()` dinámico de
+    `fixturesDemo.ts` y pisa `config.adapter`. El import dinámico es a
+    propósito: así Vite puede sacar `fixturesDemo.ts` completo del bundle
+    de producción.
+  - `src/componentes/PanelModoDemo.tsx`: tres botones ("Entrar como
+    Usuario/Inspector/Administrador") agregados al final de `Login.tsx`,
+    detrás de `{import.meta.env.DEV && ...}`.
+  - `Layout.tsx` muestra un banner amarillo fijo "MODO DEMO — datos
+    ficticios, no hay backend real detrás" mientras la sesión sea demo, para
+    que nunca se confunda con datos reales.
+- **Verificación**: contra el backend real (regresión — se probó de nuevo
+  registro/login y el interceptor de refresh ante un 401 real, para
+  confirmar que volver `async` el interceptor de request no rompió nada) y
+  contra el modo demo (sin backend/Docker/MySQL corriendo): login como
+  Administrador → CRUD de líneas, transferencia de titularidad, paginación
+  de sesiones (2 páginas) todo funcionando; login como Inspector → patente
+  genérica da "sesión activa", patente `"LIBRE"` da "sin sesión activa";
+  login como Usuario → dashboard con saldo/mapa/vehículo semilla e historial
+  con una sesión finalizada semilla. Sin errores de consola en ningún caso.
+  Se encontró y corrigió en el camino un bug real (no del modo demo): en
+  `Inspeccion.tsx` la fecha formateada en formato `es-AR` ya termina en
+  punto para "a. m."/"p. m.", y el texto le agregaba otro punto atrás
+  ("12:33 a. m..") — se sacó el punto final y se separó en dos líneas.
+
+**Decisiones importantes tomadas:**
+- El modo demo pisa el `adapter` de Axios por request (no reemplaza la
+  instancia de `cliente` entera) para poder seguir usando el mismo
+  interceptor de request que adjunta el `Authorization` header — así el
+  código de cada `api/*.ts` no necesita saber si está en modo demo o no.
+- Se decidió no usar MSW (Mock Service Worker) ni otra librería para esto:
+  es un caso de uso chico (una decena de endpoints, todos ya tipados) y un
+  adapter a medida evita una dependencia nueva y un service worker que
+  registrar/desregistrar.
+- El "backend de juguete" del modo demo vive en memoria (variables de módulo
+  en `fixturesDemo.ts`) y se reinicia con cada recarga de página — a
+  propósito, no vale la pena persistirlo en `localStorage` para una
+  herramienta de solo-desarrollo.

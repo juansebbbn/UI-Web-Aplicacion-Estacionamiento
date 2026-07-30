@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
-import { ROL_USUARIO } from "../tipos/roles";
+import { estaEnModoDemo } from "../api/modoDemo";
+import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "../tipos/roles";
 import estilos from "./Layout.module.css";
 
 export function Layout() {
@@ -14,6 +15,9 @@ export function Layout() {
 
   return (
     <div>
+      {estaEnModoDemo() && (
+        <p className={estilos.avisoDemo}>MODO DEMO — datos ficticios, no hay backend real detrás.</p>
+      )}
       <header className={estilos.encabezado}>
         <h1 className={estilos.titulo}>Estacionamiento Tandil</h1>
         <div className={estilos.usuario}>
@@ -36,6 +40,8 @@ export function Layout() {
             <Link to="/historial">Historial</Link>
           </>
         )}
+        {tieneRol(ROL_INSPECTOR) && <Link to="/inspeccion">Inspección</Link>}
+        {tieneRol(ROL_ADMINISTRADOR) && <Link to="/admin">Administración</Link>}
         <Link to="/lineas">Líneas de colectivo</Link>
       </nav>
       <main className={estilos.contenido}>

@@ -1,0 +1,27 @@
+.panel {
+  margin-top: 24px;
+  padding: 12px 14px;
+  border: 1px dashed #999;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.titulo {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.botones {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.boton {
+  padding: 6px 10px;
+  border: 1px solid #999;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
