@@ -5,9 +5,12 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 12, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 13, 2026-07-30)
 
-La Iteración 12 eliminó por completo el backend de líneas de colectivo:
+La Iteración 13 agregó una sección "Reclamos" (rol USUARIO) que **todavía
+no tiene backend**: el formulario funciona pero el dato se pierde al
+recargar la página (a propósito, ver esa iteración — falta decidir a
+dónde va y conectarlo). La Iteración 12 eliminó por completo el backend de líneas de colectivo:
 ahora todo (numero/nombre/color/recorrido) vive hardcodeado en el
 frontend, sin ningún fetch. El backend correspondiente también se borró
 (repo aparte, ver su propio PROGRESO.md). La Iteración 11 agregó
@@ -760,3 +763,35 @@ eliminado) en verde. Revisión visual: Administración ya no muestra la
 sección de líneas; `/lineas` sigue funcionando igual que antes (lista,
 selección, recorrido en el mapa) pero sin ningún request de red de por
 medio.
+
+## Iteración 13 — 2026-07-30
+
+**Qué se hizo:** nueva sección "Reclamos" (rol USUARIO), pedida
+explícitamente como **solo UI por ahora**: el destino real del dato
+("a dónde va" el reclamo) queda para definir más adelante.
+
+- `src/paginas/Reclamos.tsx` (+ `.module.css`): formulario con motivo
+  (select de 4 opciones: cobro incorrecto, zona/señalización, problema
+  con la app, otro) y descripción (textarea, `minLength=10`). Al
+  enviar, el reclamo se guarda en **estado local del componente**
+  (`useState`, no persiste ni sobrevive a un refresh) y aparece listado
+  debajo del formulario como confirmación visual de que "funciona". El
+  toast de éxito dice explícitamente "por ahora queda solo en esta
+  sesión, todavía no está conectado a ningún sistema" — a propósito,
+  para no dar a entender que se guardó en algún lado real.
+- Sin `api/reclamos.ts` ni tipo compartido: no hay ningún fetch, ninguna
+  mutation, nada que llame a un backend inexistente.
+- Agregada a la nav del sidebar (`Layout.tsx`, mismo grupo que Mi
+  estacionamiento/Vehículos/Historial, rol USUARIO) con un ícono nuevo
+  (SVG inline, mismo patrón que el resto) y a `App.tsx` como
+  `/reclamos`, protegida igual que el resto de las páginas de ese rol.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (8/8) en verde. Revisión visual manual: formulario,
+envío con toast, listado debajo, en claro/oscuro y mobile.
+
+**Pendiente para una futura iteración:** decidir a dónde va este dato
+de verdad (endpoint nuevo en `servidor-estacionamiento`, servicio
+externo, email, etc.) y conectar el formulario ahí. Hasta entonces, todo
+lo que se carga acá se pierde al recargar la página — comportamiento
+esperado, no un bug.
