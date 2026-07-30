@@ -12,7 +12,7 @@ import estilos from "./Administracion.module.css";
 export function Administracion() {
   return (
     <section>
-      <h2>Administración</h2>
+      <h2 className={estilos.tituloPagina}>Administración</h2>
       <SeccionLineas />
       <SeccionTitularidad />
       <SeccionSesiones />
@@ -74,7 +74,7 @@ function SeccionLineas() {
 
   return (
     <div className={estilos.seccion}>
-      <h3>Líneas de colectivo</h3>
+      <h3 className={estilos.tituloSeccion}>Líneas de colectivo</h3>
 
       <form className={estilos.formulario} onSubmit={manejarCrear}>
         <label className={estilos.campo}>
@@ -113,7 +113,7 @@ function SeccionLineas() {
           {lineas.data.map((linea) =>
             edicion?.id === linea.id ? (
               <li key={linea.id} className={estilos.item}>
-                <form className={estilos.formulario} onSubmit={manejarActualizar}>
+                <form className={estilos.formularioInline} onSubmit={manejarActualizar}>
                   <span className={estilos.numero} style={{ background: linea.color }}>
                     {linea.numero}
                   </span>
@@ -190,7 +190,7 @@ function SeccionTitularidad() {
 
   return (
     <div className={estilos.seccion}>
-      <h3>Transferir titularidad de un vehículo</h3>
+      <h3 className={estilos.tituloSeccion}>Transferir titularidad de un vehículo</h3>
       <form className={estilos.formulario} onSubmit={manejarEnvio}>
         <label className={estilos.campo}>
           Patente
@@ -223,7 +223,7 @@ function SeccionSesiones() {
 
   return (
     <div className={estilos.seccion}>
-      <h3>Todas las sesiones</h3>
+      <h3 className={estilos.tituloSeccion}>Todas las sesiones</h3>
 
       {sesiones.isPending && <p>Cargando sesiones…</p>}
       {sesiones.isError && <MensajeError mensaje={obtenerMensajeError(sesiones.error)} />}
@@ -239,18 +239,26 @@ function SeccionSesiones() {
                   <th>Inicio</th>
                   <th>Fin</th>
                   <th>Estado</th>
-                  <th>Monto</th>
+                  <th className={estilos.colMonto}>Monto</th>
                 </tr>
               </thead>
               <tbody>
                 {sesiones.data.content.map((sesion) => (
                   <tr key={sesion.id}>
-                    <td>{sesion.patente}</td>
+                    <td className={estilos.patenteCelda}>{sesion.patente}</td>
                     <td>{sesion.nombreZona}</td>
                     <td>{formatearFecha(sesion.horaInicio)}</td>
                     <td>{sesion.horaFin ? formatearFecha(sesion.horaFin) : "—"}</td>
-                    <td>{sesion.estado === "ACTIVA" ? "Activa" : "Finalizada"}</td>
-                    <td>{sesion.montoCobrado !== null ? formatearMonto(sesion.montoCobrado) : "—"}</td>
+                    <td>
+                      <span
+                        className={sesion.estado === "ACTIVA" ? estilos.insigniaActiva : estilos.insigniaFinalizada}
+                      >
+                        {sesion.estado === "ACTIVA" ? "Activa" : "Finalizada"}
+                      </span>
+                    </td>
+                    <td className={estilos.colMonto}>
+                      {sesion.montoCobrado !== null ? formatearMonto(sesion.montoCobrado) : "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -265,7 +273,7 @@ function SeccionSesiones() {
             >
               ← Anterior
             </button>
-            <span>
+            <span className={estilos.paginaActual}>
               Página {sesiones.data.number + 1} de {Math.max(sesiones.data.totalPages, 1)}
             </span>
             <button
