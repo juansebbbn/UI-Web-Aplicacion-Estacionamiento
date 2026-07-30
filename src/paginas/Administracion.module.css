@@ -13,8 +13,35 @@
 }
 
 .tituloSeccion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 0 0 14px;
   font-size: 1rem;
+}
+
+.ayuda {
+  color: var(--color-texto-secundario);
+  font-size: 0.9rem;
+}
+
+.puntoEnVivo {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-exito);
+  animation: pulso 1.6s ease-in-out infinite;
+}
+
+@keyframes pulso {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .formulario {
@@ -164,4 +191,111 @@
 
 .paginaActual {
   color: var(--color-texto-secundario);
+}
+
+.listaUsuarios {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tarjetaUsuario {
+  padding: 14px 16px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-control);
+}
+
+.usuarioEncabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.usuarioNombre {
+  font-weight: 700;
+}
+
+.usuarioMeta {
+  font-size: 0.82rem;
+  color: var(--color-texto-secundario);
+}
+
+.rolesUsuario {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.insigniaRol {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-inactivo-fondo);
+  color: var(--color-inactivo-texto);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.saldoAcciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.usuarioSaldo {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.saldoNegativo {
+  color: var(--color-peligro);
+}
+
+.vehiculosUsuario {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.chipVehiculo {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-superficie-alterna);
+  border: 1px solid var(--color-borde);
+  font-size: 0.78rem;
+}
+
+.sinVehiculos {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  color: var(--color-texto-secundario);
+}
+
+.formularioAjuste {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-borde);
+}
+
+.formularioAjuste input {
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-borde-input);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+  color: var(--color-texto);
 }

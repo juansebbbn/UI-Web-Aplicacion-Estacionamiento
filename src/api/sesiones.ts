@@ -1,6 +1,6 @@
 import { cliente } from "./cliente";
 import type { Pagina } from "../tipos/comun";
-import type { IniciarSesionSolicitud, InspeccionRespuesta, SesionRespuesta } from "../tipos/sesion";
+import type { EstadoSesion, IniciarSesionSolicitud, InspeccionRespuesta, SesionRespuesta } from "../tipos/sesion";
 
 export async function iniciarSesionEstacionamiento(datos: IniciarSesionSolicitud): Promise<SesionRespuesta> {
   const respuesta = await cliente.post<SesionRespuesta>("/sesiones", datos);
@@ -27,6 +27,7 @@ export interface ParametrosPaginacion {
   page?: number;
   size?: number;
   sort?: string;
+  estado?: EstadoSesion;
 }
 
 // Solo ADMINISTRADOR.

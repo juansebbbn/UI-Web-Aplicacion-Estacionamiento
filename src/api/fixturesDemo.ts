@@ -5,7 +5,7 @@ import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "ax
 import type { TipoVehiculo, VehiculoRespuesta } from "../tipos/vehiculo";
 import type { EstadoSesion, SesionRespuesta } from "../tipos/sesion";
 import type { ZonaRespuesta } from "../tipos/zona";
-import type { UsuarioRespuesta } from "../tipos/usuario";
+import type { UsuarioAdminRespuesta, UsuarioRespuesta } from "../tipos/usuario";
 import type { Pagina } from "../tipos/comun";
 import { leerSesion } from "./almacenTokens";
 
@@ -59,6 +59,44 @@ let sesionesDemo: SesionRespuesta[] = [
   },
 ];
 let siguienteIdSesion = 2;
+
+// Otros usuarios ficticios para el panel de ADMINISTRADOR (listado de
+// usuarios + ajuste de saldo). El usuario "propio" (id 1) no esta aca: se
+// arma dinamicamente en el handler de /usuarios/admin a partir de
+// saldoDemo/vehiculosDemo/leerSesion(), para que quede consistente con el
+// resto del modo demo (ej. si finaliza una sesion y su saldo cambia).
+let otrosUsuariosDemo: UsuarioAdminRespuesta[] = [
+  {
+    id: 2,
+    username: "juan.perez",
+    dni: "30111222",
+    saldo: -1500,
+    fechaRegistro: haceMinutos(60 * 24 * 10),
+    roles: ["ROLE_USUARIO"],
+    vehiculos: [{ id: 10, patente: "OTR100", tipo: "AUTO" }],
+  },
+  {
+    id: 3,
+    username: "maria.gomez",
+    dni: "28555666",
+    saldo: 850,
+    fechaRegistro: haceMinutos(60 * 24 * 60),
+    roles: ["ROLE_USUARIO"],
+    vehiculos: [
+      { id: 11, patente: "OTR101", tipo: "MOTO" },
+      { id: 12, patente: "OTR102", tipo: "AUTO" },
+    ],
+  },
+  {
+    id: 4,
+    username: "inspector.demo",
+    dni: "27333444",
+    saldo: 0,
+    fechaRegistro: haceMinutos(60 * 24 * 90),
+    roles: ["ROLE_INSPECTOR"],
+    vehiculos: [],
+  },
+];
 
 // Sesiones de otros usuarios ficticios, solo para que la tabla de
 // ADMINISTRADOR tenga mas de una fila y se pueda ver la paginacion.
@@ -194,7 +232,8 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
   if (metodo === "get" && url === "/sesiones/admin") {
     const page = Number(config.params?.page ?? 0);
     const size = Number(config.params?.size ?? 20);
-    const todas = sesionesAdminDemo();
+    const estado = config.params?.estado as EstadoSesion | undefined;
+    const todas = sesionesAdminDemo().filter((sesion) => !estado || sesion.estado === estado);
     const contenido = todas.slice(page * size, page * size + size);
     const data: Pagina<SesionRespuesta> = {
       content: contenido,
@@ -205,6 +244,46 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
       first: page === 0,
       last: (page + 1) * size >= todas.length,
     };
+    return ok(config, data);
+  }
+
+  if (metodo === "get" && url === "/usuarios/admin") {
+    const sesion = leerSesion();
+    const usuarioPropio: UsuarioAdminRespuesta = {
+      id: 1,
+      username: sesion?.username ?? "demo",
+      dni: "00000000",
+      saldo: saldoDemo,
+      fechaRegistro: haceMinutos(60 * 24 * 30),
+      roles: sesion?.roles ?? [],
+      vehiculos: vehiculosDemo,
+    };
+    return ok(config, [usuarioPropio, ...otrosUsuariosDemo]);
+  }
+  const matchAjusteSaldo = /^\/usuarios\/admin\/(\d+)\/saldo$/.exec(url);
+  if (metodo === "put" && matchAjusteSaldo) {
+    const id = Number(matchAjusteSaldo[1]);
+    const cuerpo = cuerpoDe<{ monto: number; motivo: string }>(config);
+
+    if (id === 1) {
+      saldoDemo += cuerpo.monto;
+      const sesion = leerSesion();
+      const data: UsuarioRespuesta = {
+        id: 1,
+        username: sesion?.username ?? "demo",
+        dni: "00000000",
+        saldo: saldoDemo,
+        fechaRegistro: haceMinutos(60 * 24 * 30),
+        roles: sesion?.roles ?? [],
+      };
+      return ok(config, data);
+    }
+
+    const usuario = otrosUsuariosDemo.find((u) => u.id === id);
+    if (!usuario) return Promise.reject(new Error(`Modo demo: no existe el usuario ${id}`));
+    const actualizado: UsuarioAdminRespuesta = { ...usuario, saldo: usuario.saldo + cuerpo.monto };
+    otrosUsuariosDemo = otrosUsuariosDemo.map((u) => (u.id === id ? actualizado : u));
+    const { vehiculos: _vehiculos, ...data } = actualizado;
     return ok(config, data);
   }
 
