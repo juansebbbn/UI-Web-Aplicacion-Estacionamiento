@@ -1,0 +1,10 @@
+.pagina {
+  min-height: 100svh;
+  background: var(--color-fondo);
+}
+
+.contenedor {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}

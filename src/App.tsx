@@ -2,6 +2,7 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { RutaProtegida } from "./rutas/RutaProtegida";
 import { Layout } from "./componentes/Layout";
 import { ConmutadorTema } from "./componentes/ConmutadorTema";
+import { EnvoltorioLineas } from "./componentes/EnvoltorioLineas";
 import { Login } from "./paginas/Login";
 import { Registro } from "./paginas/Registro";
 import { Inicio } from "./paginas/Inicio";
@@ -30,6 +31,9 @@ function App() {
       <Route element={<LayoutPublico />}>
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+      </Route>
+
+      <Route element={<EnvoltorioLineas />}>
         <Route path="/lineas" element={<Lineas />} />
       </Route>
 
