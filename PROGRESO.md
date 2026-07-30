@@ -5,11 +5,15 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 11, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 12, 2026-07-30)
 
-La Iteración 11 agregó selección de línea + recorrido en el mapa, con
-datos de recorrido hardcodeados en el frontend (ilustrativos, no reales
-— ver esa iteración antes de asumir que son datos verdaderos). La
+La Iteración 12 eliminó por completo el backend de líneas de colectivo:
+ahora todo (numero/nombre/color/recorrido) vive hardcodeado en el
+frontend, sin ningún fetch. El backend correspondiente también se borró
+(repo aparte, ver su propio PROGRESO.md). La Iteración 11 agregó
+selección de línea + recorrido en el mapa, con datos de recorrido
+hardcodeados en el frontend (ilustrativos, no reales — ver esa iteración
+antes de asumir que son datos verdaderos). La
 Iteración 10 corrigió que "Líneas de colectivo" abriera como una
 página suelta sin sidebar/topbar al clickearla desde el nav estando
 logueado — ahora se abre dentro del Layout normal, al lado del sidebar,
@@ -717,3 +721,42 @@ nombre) y su recorrido dibujado sobre un mapa Leaflet.
 recorrido correctos para ambas líneas semilla (500 y 501) en claro,
 oscuro, desktop (lista+detalle lado a lado) y mobile (apilado, con el
 drawer del sidebar).
+
+## Iteración 12 — 2026-07-30
+
+**Qué se hizo:** a pedido explícito del usuario, líneas de colectivo
+pasó de "datos reales por API + recorrido hardcodeado" a **100% datos
+del frontend**, sin ningún fetch:
+
+- `src/data/lineas.ts` reemplaza a `recorridosLineas.ts`: un solo dataset
+  estático `LINEAS_COLECTIVO: LineaColectivo[]` con `numero` (identificador
+  natural, ya no hay `id` de base de datos), `nombre`, `color` y
+  `recorrido` opcional.
+- Eliminados `src/api/lineas.ts` y `src/tipos/linea.ts` — no queda
+  ninguna llamada ni tipo de respuesta relacionado con `/lineas`.
+- `src/api/fixturesDemo.ts`: se sacó el fixture de `/lineas` (ya no hace
+  falta simular un backend que directamente no existe).
+- `Administracion.tsx`: se eliminó `SeccionLineas` completa (crear/
+  editar/eliminar línea) — no hay nada que administrar en un backend
+  inexistente. Solo quedan transferencia de titularidad y sesiones.
+- `Lineas.tsx`: usa `LINEAS_COLECTIVO` directamente, sin `useQuery` ni
+  estados de carga/error (los datos están siempre disponibles de forma
+  síncrona, no hay latencia de red que manejar).
+- `e2e/administrador.spec.ts`: se sacó el test de CRUD de líneas.
+
+**El backend correspondiente (`servidor-estacionamiento`, repo aparte)
+se actualizó en un commit propio ahí**: se borró el módulo completo
+(`Linea`, `LineaControlador`, `LineaServicio`, `LineaRepositorio`,
+`LineaMapper`, DTOs, `LineaYaExisteException`, el test de integración) y
+se agregó una migración Flyway nueva que dropea la tabla `lineas` (no se
+editó `V1__esquema_inicial.sql` a propósito: Flyway valida checksums de
+migraciones ya aplicadas, así que sacar una tabla de un esquema ya
+corrido se hace con una migración nueva, no reescribiendo la vieja). Ver
+el `PROGRESO.md` de ese repo para el detalle completo.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (8/8, uno menos que antes por el test de CRUD
+eliminado) en verde. Revisión visual: Administración ya no muestra la
+sección de líneas; `/lineas` sigue funcionando igual que antes (lista,
+selección, recorrido en el mapa) pero sin ningún request de red de por
+medio.
