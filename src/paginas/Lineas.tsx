@@ -1,24 +1,19 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { listarLineas } from "../api/lineas";
-import { obtenerMensajeError } from "../api/errores";
-import { MensajeError } from "../componentes/MensajeError";
 import { MapaRecorrido } from "../componentes/MapaRecorrido";
 import { useAutenticacion } from "../contextos/useAutenticacion";
-import { RECORRIDOS_LINEAS } from "../data/recorridosLineas";
-import type { LineaRespuesta } from "../tipos/linea";
+import { LINEAS_COLECTIVO, type LineaColectivo } from "../data/lineas";
 import estilos from "./Lineas.module.css";
 
 // Publica: no requiere estar logueado (ver App.tsx / EnvoltorioLineas). El
 // wrapper decide si esto se muestra dentro del Layout (con sesion) o solo
 // (sin sesion) — este componente no sabe ni le importa cual de los dos es.
+//
+// Los datos de las lineas viven completamente en el front (LINEAS_COLECTIVO,
+// ver src/data/lineas.ts) — no hay fetch a ningun backend.
 export function Lineas() {
   const { estaAutenticado } = useAutenticacion();
-  const lineas = useQuery({ queryKey: ["lineas"], queryFn: listarLineas });
-  const [seleccionada, setSeleccionada] = useState<LineaRespuesta | null>(null);
-
-  const recorrido = seleccionada ? RECORRIDOS_LINEAS[seleccionada.numero] : undefined;
+  const [seleccionada, setSeleccionada] = useState<LineaColectivo | null>(null);
 
   return (
     <div>
@@ -29,21 +24,21 @@ export function Lineas() {
       )}
       <h2 className={estilos.titulo}>Líneas de colectivo</h2>
 
-      {lineas.isPending && <p>Cargando líneas…</p>}
-      {lineas.isError && <MensajeError mensaje={obtenerMensajeError(lineas.error)} />}
-      {lineas.data && lineas.data.length === 0 && <p>No hay líneas cargadas.</p>}
+      {LINEAS_COLECTIVO.length === 0 && <p>No hay líneas cargadas.</p>}
 
-      {lineas.data && lineas.data.length > 0 && (
+      {LINEAS_COLECTIVO.length > 0 && (
         <div className={estilos.contenido}>
           <ul className={estilos.lista}>
-            {lineas.data.map((linea) => (
-              <li key={linea.id}>
+            {LINEAS_COLECTIVO.map((linea) => (
+              <li key={linea.numero}>
                 <button
                   type="button"
                   className={
-                    seleccionada?.id === linea.id ? `${estilos.item} ${estilos.itemSeleccionado}` : estilos.item
+                    seleccionada?.numero === linea.numero
+                      ? `${estilos.item} ${estilos.itemSeleccionado}`
+                      : estilos.item
                   }
-                  aria-pressed={seleccionada?.id === linea.id}
+                  aria-pressed={seleccionada?.numero === linea.numero}
                   onClick={() => setSeleccionada(linea)}
                 >
                   <span className={estilos.numero} style={{ background: linea.color }}>
@@ -67,9 +62,9 @@ export function Lineas() {
                 </div>
               </div>
 
-              {recorrido ? (
+              {seleccionada.recorrido ? (
                 <div className={estilos.tarjetaMapa}>
-                  <MapaRecorrido puntos={recorrido} color={seleccionada.color} />
+                  <MapaRecorrido puntos={seleccionada.recorrido} color={seleccionada.color} />
                 </div>
               ) : (
                 <p className={estilos.sinRecorrido}>Todavía no hay un recorrido cargado para esta línea.</p>

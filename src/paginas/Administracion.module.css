@@ -25,12 +25,6 @@
   margin: 0 0 16px;
 }
 
-.formularioInline {
-  composes: formulario;
-  margin: 0;
-  align-items: center;
-}
-
 .campo {
   display: flex;
   flex-direction: column;
@@ -46,15 +40,6 @@
   border-radius: var(--radio-control);
   background: var(--color-fondo);
   color: var(--color-texto);
-}
-
-.campoColor {
-  padding: 2px;
-  width: 48px;
-  height: 38px;
-  border: 1px solid var(--color-borde-input);
-  border-radius: var(--radio-control);
-  background: var(--color-fondo);
 }
 
 .boton {
@@ -93,60 +78,6 @@
 .botonChico:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-.botonPeligro {
-  composes: botonChico;
-  background: transparent;
-  color: var(--color-peligro);
-  border-color: var(--color-peligro);
-}
-
-.botonPeligro:hover:not(:disabled) {
-  background: var(--color-error-fondo);
-}
-
-.lista {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: var(--color-fondo);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-control);
-  flex-wrap: wrap;
-}
-
-.numero {
-  min-width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-}
-
-.nombreLinea {
-  flex: 1;
-  font-weight: 500;
-}
-
-.acciones {
-  display: flex;
-  gap: 6px;
 }
 
 .tabla {

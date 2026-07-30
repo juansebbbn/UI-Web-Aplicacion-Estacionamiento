@@ -4,7 +4,6 @@
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import type { TipoVehiculo, VehiculoRespuesta } from "../tipos/vehiculo";
 import type { EstadoSesion, SesionRespuesta } from "../tipos/sesion";
-import type { LineaRespuesta } from "../tipos/linea";
 import type { ZonaRespuesta } from "../tipos/zona";
 import type { UsuarioRespuesta } from "../tipos/usuario";
 import type { Pagina } from "../tipos/comun";
@@ -60,12 +59,6 @@ let sesionesDemo: SesionRespuesta[] = [
   },
 ];
 let siguienteIdSesion = 2;
-
-let lineasDemo: LineaRespuesta[] = [
-  { id: 1, numero: 500, nombre: "Terminal — Hospital", color: "#1a5fb4" },
-  { id: 2, numero: 501, nombre: "Barrio Movediza — Centro", color: "#2ec27e" },
-];
-let siguienteIdLinea = 3;
 
 // Sesiones de otros usuarios ficticios, solo para que la tabla de
 // ADMINISTRADOR tenga mas de una fila y se pueda ver la paginacion.
@@ -213,28 +206,6 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
       last: (page + 1) * size >= todas.length,
     };
     return ok(config, data);
-  }
-
-  if (metodo === "get" && url === "/lineas") {
-    return ok(config, lineasDemo);
-  }
-  if (metodo === "post" && url === "/lineas") {
-    const cuerpo = cuerpoDe<{ numero: number; nombre: string; color: string }>(config);
-    const nueva: LineaRespuesta = { id: siguienteIdLinea++, ...cuerpo };
-    lineasDemo = [...lineasDemo, nueva];
-    return ok(config, nueva, 201);
-  }
-  const matchLinea = /^\/lineas\/(\d+)$/.exec(url);
-  if (metodo === "put" && matchLinea) {
-    const id = Number(matchLinea[1]);
-    const cuerpo = cuerpoDe<{ nombre: string; color: string }>(config);
-    lineasDemo = lineasDemo.map((l) => (l.id === id ? { ...l, ...cuerpo } : l));
-    return ok(config, lineasDemo.find((l) => l.id === id));
-  }
-  if (metodo === "delete" && matchLinea) {
-    const id = Number(matchLinea[1]);
-    lineasDemo = lineasDemo.filter((l) => l.id !== id);
-    return ok(config, undefined, 204);
   }
 
   if (url.startsWith("/auth/")) {
