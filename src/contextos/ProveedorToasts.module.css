@@ -16,13 +16,14 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px;
-  border-radius: 6px;
+  padding: 12px 16px;
+  border-radius: var(--radio-control);
   font-size: 0.9rem;
+  font-weight: 500;
   max-width: min(90vw, 380px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sombra-tarjeta-hover);
   pointer-events: auto;
-  animation: entrar 0.15s ease-out;
+  animation: entrar 0.2s ease-out;
 }
 
 .exito {
