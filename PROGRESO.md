@@ -5,8 +5,12 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 14, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 15, 2026-07-30)
 
+La Iteración 15 eliminó el rol INSPECTOR de toda la app: su potestad
+(página de Inspección) ahora requiere ADMINISTRADOR. El backend
+correspondiente (borrado del rol + seed de datos de demostración) está
+en `servidor-estacionamiento`, Iteración 7 de su propio `PROGRESO.md`.
 La Iteración 14 completó el panel de administrador: sesiones en vivo
 (auto-refresh), usuarios con vehículos anidados, y ajuste manual de
 saldo (monto con signo + motivo). Requirió backend nuevo en
@@ -853,3 +857,36 @@ en ese repo — ver su `PROGRESO.md`):
 panel (las 4 secciones) en claro y oscuro, y el flujo end-to-end de
 ajuste de saldo (-$1.500,00 → +300 → -$1.200,00, con toast de
 confirmación).
+
+## Iteración 15 — 2026-07-30
+
+**Qué se hizo:** a pedido del usuario, se eliminó el rol INSPECTOR de
+toda la app (su única potestad, la página de Inspección, ahora requiere
+ROL_ADMINISTRADOR). Cambio hecho en conjunto con el seed de datos del
+backend (ver `PROGRESO.md` de `servidor-estacionamiento`, Iteración 7).
+
+- `tipos/roles.ts`: se elimina `ROL_INSPECTOR`.
+- `App.tsx`: `/inspeccion` pasa a exigir `ROL_ADMINISTRADOR`.
+- `Layout.tsx`: el link "Inspección" se movió al mismo bloque de nav
+  que "Administración" (antes eran condicionales de rol separadas) —
+  un ADMINISTRADOR ve ambos juntos en el sidebar.
+- `Inicio.tsx`: se saca la rama de redirección a `/inspeccion` (ya no
+  hay landing propia de un rol dedicado; `ADMINISTRADOR` sigue yendo a
+  `/admin`, e Inspección se alcanza desde la nav, no como destino de
+  login).
+- `PanelModoDemo.tsx`: se saca el botón "Entrar como Inspector" (solo
+  quedan Usuario/Administrador en el modo demo).
+- `fixturesDemo.ts`: el usuario ficticio de `otrosUsuariosDemo` que
+  tenía `ROLE_INSPECTOR` pasa a ser un `ROLE_USUARIO` común
+  (`sofia.martinez`, antes `inspector.demo`) — mantiene la cantidad de
+  usuarios ficticios en el panel de administración sin un rol que ya
+  no existe.
+- `e2e/ayudantes.ts` + `e2e/inspector.spec.ts`: `RolDemo` pierde
+  `"Inspector"`; los tests de inspección ahora entran como
+  Administrador y clickean el link "Inspección" en la nav en vez de
+  depender de un redirect automático post-login a esa página.
+
+**Verificación:** `tsc -b`, `oxlint`, `vitest run` (9/9) y
+`playwright test` (8/8) en verde. Revisión visual manual: login sin el
+botón de Inspector, sidebar de Administrador mostrando "Administración"
++ "Inspección" juntos en claro y oscuro.
