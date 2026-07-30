@@ -5,7 +5,14 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
-## Estado actual — qué falta (al cierre de la Iteración 6, 2026-07-30)
+## Estado actual — qué falta (al cierre de la Iteración 7, 2026-07-30)
+
+Además de todo lo de la Iteración 6, se completó un **rediseño visual
+completo** (Iteración 7: paleta tipo dashboard fintech, dark mode
+conservado y mejorado). Ver esa iteración para el detalle. No cambió
+ningún endpoint, query, mutation ni regla de negocio — solo CSS Modules,
+estructura JSX y (donde el texto/markup cambió) los specs E2E que lo
+verificaban literalmente.
 
 **Todo el alcance imprescindible (v1) Y los cuatro deseables de la
 especificación original están completos.** Ver Iteración 6 para el detalle
@@ -465,3 +472,94 @@ mobile.
   líneas, transferencia de titularidad): no era estrictamente parte del
   pedido ("reemplazar MensajeError"), pero es la misma categoría de
   feedback de acción y hubiese sido inconsistente no cubrirlo.
+
+## Iteración 7 — 2026-07-30
+
+**Qué se hizo:** rediseño visual completo pedido por el usuario, tomando
+prestado el lenguaje visual de dashboards fintech tipo Bull Market
+(broker argentino) — cards con sombra suave, jerarquía fuerte de números,
+paleta con acento azul eléctrico — aplicado a los datos de estacionamiento.
+Alcance explícitamente acotado a estilos/layout/estructura visual: **cero
+cambios** de endpoints, queries, mutations o reglas de negocio. Un commit
+por componente, en este orden:
+
+1. **Tokens de diseño** (`src/index.css`): nueva paleta con `--color-fondo`
+   (fondo de página) separado de `--color-superficie` (fondo de tarjetas),
+   acento azul eléctrico (`--color-primario`, decisión del usuario entre
+   azul/índigo/verde), tokens nuevos de advertencia/naranja
+   (`--color-advertencia*`, para futuros estados "por vencer" que la
+   spec pedía pero el modelo de datos actual no expone todavía a nivel de
+   lugar individual) y tokens de radio/sombra (`--radio-tarjeta`,
+   `--radio-control`, `--sombra-tarjeta`). Mismo esquema de tres bloques
+   que ya usaba el proyecto (`:root` claro por defecto,
+   `@media (prefers-color-scheme: dark)`, `[data-theme]` manual) — no se
+   tocó la arquitectura de dark mode, ya estaba bien resuelta desde la
+   Iteración 6.
+2. **Layout**: header sticky con logo/marca, nav convertida a pills con
+   estado activo (`Link` → `NavLink`), contenido centrado con ancho máximo
+   para pantallas grandes.
+3. **ConmutadorTema**: el botón único que ciclaba sistema→claro→oscuro
+   pasó a un segmented control de 3 íconos SVG inline (sin dependencia
+   nueva), fijo abajo a la derecha — un toggle explícito en vez de uno que
+   obliga a adivinar en qué paso del ciclo está.
+4. **DashboardUsuario** (la pieza central): saldo/tiempo
+   estacionado/costo estimado pasan a una fila de "stat cards" con
+   números grandes tipo hero (como el "Total de la Cuenta" de un
+   dashboard financiero); la sesión activa pasa de texto plano a un
+   ticket con badge "Activa"; el mapa de zonas queda dentro de una
+   tarjeta con el mismo lenguaje visual.
+5. **Vehículos**: formulario como tarjeta separada, listado con íconos
+   auto/moto (SVG inline) en vez de texto plano.
+6. **Historial**: tabla envuelta en tarjeta, encabezados en mayúscula
+   gris chica (patrón "Mis Inversiones"), estado como badge, monto
+   alineado a la derecha con `tabular-nums`.
+7. **Inspección**: resultado como tarjeta con insignia de estado y la
+   patente como cifra grande, en vez de un párrafo con color.
+8. **Administración**: las tres secciones (líneas, titularidad, sesiones)
+   pasan a tarjetas; líneas reusa el patrón de filas de Vehículos; la
+   tabla de sesiones reusa el patrón de Historial.
+9. **Login/Registro**: tarjeta de auth centrada con logo/marca arriba.
+10. **Líneas de colectivo** (pública): listado como tarjetas, igual que
+    Vehículos/Administración.
+11. **Pulido final**: toasts, `MensajeError` y `PanelModoDemo` migrados a
+    los tokens `--radio-control`/`--sombra-tarjeta-hover` para que no
+    quedara ningún radio/sombra hardcodeado suelto.
+
+**Verificación:**
+- `tsc -b`, `oxlint` y `vitest run` en verde después de cada paso.
+- Revisión visual con Playwright (capturas manuales, no versionadas) del
+  dashboard, login y administración en claro/oscuro y en mobile
+  (390×844) y tablet (820×1100): contraste correcto en ambos temas, nav
+  con scroll horizontal en mobile, tablas con scroll horizontal propio
+  dentro de la tarjeta (mismo comportamiento pre-existente de
+  `Historial`, solo que ahora con wrapper visual).
+- **Se encontraron y arreglaron 6 tests E2E rotos** por el cambio de
+  texto/estructura (no por un bug real): `"Saldo:"` → `"Saldo"` (ahora
+  label de stat card sin dos puntos), `"E2E1234 — Auto"` → patente y tipo
+  en spans separados (se ajustó el assertion a `toContainText`), `"Sesión
+  activa"` como párrafo → badge (mismo texto, pero ahora hay que buscarlo
+  como texto de una insignia), `"tiene/no tiene una sesión activa"` (en
+  Inspección) → `"Sesión activa"`/`"Sin sesión activa"` como texto de
+  insignia, y el test de tema completo reescrito porque pasó de un botón
+  con texto (`"Tema: X"`) a un segmented control de 3 `role="radio"` sin
+  texto visible (nombre accesible por `title`). `npx playwright test`:
+  9/9 en verde tras el fix.
+- `npm run build` + `grep` sobre `dist/assets/*.js`: el modo demo sigue
+  ausente del bundle de producción (mismo chequeo de siempre, sin
+  regresión).
+
+**Decisiones de diseño tomadas (confirmadas con el usuario antes de
+arrancar):** acento azul eléctrico (vs. índigo/violeta o verde esmeralda,
+descartado por pisarse visualmente con el verde de estado "dentro de
+zona"); responsive con la misma prioridad en mobile/tablet/desktop, sin
+un dispositivo dominante.
+
+**Deuda/decisión pendiente para una futura iteración:** la spec de estilo
+original pedía verde/naranja/rojo para "lugar libre / por vencer /
+ocupado", pero el modelo de datos actual (`ZonaRespuesta`) no expone el
+estado de lugares individuales, solo zonas con tarifa por minuto — no hay
+un "lugar" con estado libre/ocupado/por vencer para pintar. Se agregó el
+token `--color-advertencia` (naranja) preparado para ese caso, pero no se
+inventó un estado que el backend no tiene. Si en el futuro se agrega esa
+granularidad al backend, ya está el token listo para usarlo sin tocar
+`index.css` de nuevo.
