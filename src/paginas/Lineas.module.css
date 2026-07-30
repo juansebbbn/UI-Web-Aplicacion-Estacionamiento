@@ -1,24 +1,37 @@
+.pagina {
+  min-height: 100svh;
+  background: var(--color-fondo);
+}
+
 .contenedor {
   max-width: 480px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 24px 20px 40px;
+}
+
+.titulo {
+  margin: 4px 0 20px;
+  font-size: 1.3rem;
 }
 
 .lista {
   list-style: none;
   padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--color-superficie);
   border: 1px solid var(--color-borde);
-  border-radius: 8px;
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-tarjeta);
 }
 
 .numero {
@@ -27,12 +40,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #fff;
   font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nombre {
+  font-weight: 500;
 }
 
 .volver {
   display: inline-block;
   margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: var(--color-texto-secundario);
+  text-decoration: none;
+}
+
+.volver:hover {
+  color: var(--color-primario);
 }

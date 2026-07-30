@@ -12,28 +12,30 @@ export function Lineas() {
   const lineas = useQuery({ queryKey: ["lineas"], queryFn: listarLineas });
 
   return (
-    <div className={estilos.contenedor}>
-      <Link to={estaAutenticado ? "/" : "/login"} className={estilos.volver}>
-        ← Volver
-      </Link>
-      <h1>Líneas de colectivo</h1>
+    <div className={estilos.pagina}>
+      <div className={estilos.contenedor}>
+        <Link to={estaAutenticado ? "/" : "/login"} className={estilos.volver}>
+          ← Volver
+        </Link>
+        <h1 className={estilos.titulo}>Líneas de colectivo</h1>
 
-      {lineas.isPending && <p>Cargando líneas…</p>}
-      {lineas.isError && <MensajeError mensaje={obtenerMensajeError(lineas.error)} />}
-      {lineas.data && lineas.data.length === 0 && <p>No hay líneas cargadas.</p>}
+        {lineas.isPending && <p>Cargando líneas…</p>}
+        {lineas.isError && <MensajeError mensaje={obtenerMensajeError(lineas.error)} />}
+        {lineas.data && lineas.data.length === 0 && <p>No hay líneas cargadas.</p>}
 
-      {lineas.data && lineas.data.length > 0 && (
-        <ul className={estilos.lista}>
-          {lineas.data.map((linea) => (
-            <li key={linea.id} className={estilos.item}>
-              <span className={estilos.numero} style={{ background: linea.color }}>
-                {linea.numero}
-              </span>
-              <span>{linea.nombre}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+        {lineas.data && lineas.data.length > 0 && (
+          <ul className={estilos.lista}>
+            {lineas.data.map((linea) => (
+              <li key={linea.id} className={estilos.item}>
+                <span className={estilos.numero} style={{ background: linea.color }}>
+                  {linea.numero}
+                </span>
+                <span className={estilos.nombre}>{linea.nombre}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
