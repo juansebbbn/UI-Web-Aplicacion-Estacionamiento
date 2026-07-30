@@ -5,6 +5,68 @@ Registro de avance del frontend de estacionamiento medido de Tandil. Consume
 especificación de UI (mensaje inicial de este proyecto) para el detalle de
 roles, endpoints y alcance.
 
+## Estado actual — qué falta (al cierre de la Iteración 2, 2026-07-30)
+
+Lo que ya funciona, probado contra el backend real: registro, login, logout,
+refresh automático de token, dashboard USUARIO con saldo y mapa de zonas.
+Todo lo demás de la especificación sigue pendiente:
+
+**Imprescindibles (v1) sin hacer:**
+- [ ] **Vehículos propios**: alta (`POST /vehiculos`), listado
+      (`GET /vehiculos`), baja (`DELETE /vehiculos/{patente}`). No hay
+      página ni componente todavía (`src/api/vehiculos.ts` ya existe y está
+      probado por tipos, pero nada lo consume en la UI).
+- [ ] **Iniciar sesión de estacionamiento**: elegir un vehículo propio +
+      click en el mapa (o geolocalización del navegador,
+      `navigator.geolocation`) + verificar la coordenada contra una zona
+      (`POST /zonas/verificacion`) + `POST /sesiones`. Requiere extender
+      `MapaZonas` (o un componente nuevo) para capturar el click y devolver
+      la coordenada elegida.
+- [ ] **Sesión activa y finalizarla**: mostrar la sesión en curso (con hora
+      de inicio) y el botón para finalizar (`POST /sesiones/{id}/finalizar`),
+      mostrando el monto cobrado que devuelve el backend.
+- [ ] **Historial de sesiones propias** (`GET /sesiones`).
+- [ ] **Vista pública de líneas de colectivo** (`GET /lineas`, sin login).
+      `src/api/lineas.ts` ya existe pero no se usa en ninguna página.
+- [ ] **Vista INSPECTOR**: pantalla con un campo de patente que llama a
+      `GET /sesiones/inspeccion/{patente}` y muestra si tiene sesión activa
+      y desde cuándo (sin datos del dueño). Hoy un usuario solo-INSPECTOR ve
+      el placeholder genérico de `Inicio.tsx`.
+- [ ] **Vista ADMINISTRADOR**: CRUD de líneas (`POST`/`PUT`/`DELETE
+      /lineas`), transferencia de titularidad de un vehículo
+      (`PUT /vehiculos/{patente}/titularidad`) y tabla paginada de todas las
+      sesiones (`GET /sesiones/admin?page&size&sort`). Nada de esto tiene
+      página todavía.
+- [ ] **Errores específicos de negocio probados en la UI**: `obtenerMensajeError`
+      (en `src/api/errores.ts`) ya traduce cualquier `problem+json`, pero
+      todavía no se probó en la práctica con saldo insuficiente (402), fuera
+      de zona (422) ni conflictos (409) — van a aparecer recién con los
+      módulos de vehículos/sesiones.
+- [ ] **Empaquetado**: Dockerfile + build estático servido con nginx (la
+      spec lo pide para alinear con el `docker-compose.yml` del backend). No
+      se creó todavía.
+
+**Deseables (si da el tiempo), sin empezar:**
+- [ ] Cronómetro en vivo del tiempo/costo estimado de la sesión activa
+      (calculado en el cliente a partir de `horaInicio` y la tarifa de zona).
+- [ ] Toasts de éxito/error en vez del banner `MensajeError` actual.
+- [ ] Tests E2E con Playwright de iniciar/finalizar sesión (los scripts
+      manuales usados para verificar la Iteración 2 no quedaron como suite
+      de tests, solo como verificación puntual — ver esa iteración).
+- [ ] Dark mode: hoy solo hay `@media (prefers-color-scheme: dark)` parcial
+      en algunos CSS Modules (`MensajeError`, `Layout`), sin cobertura
+      completa ni toggle manual.
+
+**Deuda de testing:** los únicos tests automatizados hoy son de `src/api/`
+(`almacenTokens.test.ts`, `errores.test.ts`). No hay ningún test de
+componentes ni de páginas (Login, Registro, DashboardUsuario, Layout,
+RutaProtegida, MapaZonas) todavía.
+
+**Explícitamente fuera de alcance** (no implementar aunque se pida sin
+volver a confirmar): pagos reales, notificaciones push, recuperación de
+contraseña/verificación de email, gestión de roles desde la UI, app nativa
+mobile.
+
 ## Iteración 1 — 2026-07-30
 
 **Qué se hizo:**
