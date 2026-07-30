@@ -1,0 +1,15 @@
+.saldo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.saldoMonto {
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.saldoNegativo {
+  color: #c01c28;
+}

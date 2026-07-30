@@ -64,10 +64,54 @@ roles, endpoints y alcance.
 - [x] Scaffold, dependencias, estructura de carpetas
 - [x] Tipos TS espejando los DTOs del backend
 - [x] Cliente HTTP con refresh automático + contexto de autenticación
-- [ ] Enrutado real (`react-router`) + páginas: login, registro, dashboard USER
-- [ ] Mapa de zonas (Leaflet) + alta/listado de vehículos
-- [ ] Iniciar/finalizar sesión de estacionamiento + historial
+- [x] Enrutado real (`react-router`) + páginas: login, registro, dashboard USUARIO
+- [x] Mapa de zonas (Leaflet)
+- [x] Manejo de errores RFC 7807 traducido a mensajes legibles
+- [ ] Alta/listado de vehículos
+- [ ] Iniciar/finalizar sesión de estacionamiento (click en el mapa) + historial
 - [ ] Vista INSPECTOR (búsqueda de patente)
 - [ ] Vista ADMINISTRADOR (líneas, transferencia de titularidad, tabla paginada de sesiones)
-- [ ] Manejo de errores RFC 7807 traducido a mensajes legibles
-- [ ] Tests de componentes/páginas críticas
+- [ ] Tests de componentes/páginas críticas (por ahora solo `api/`)
+
+## Iteración 2 — 2026-07-30
+
+**Qué se hizo:**
+- `src/paginas/`: `Login`, `Registro` (con validación HTML básica espejando las
+  constraints del backend: username 4-50, password 8+, DNI 7-9 dígitos),
+  `Inicio` (redirige según rol) y `DashboardUsuario` (saldo + mapa de zonas).
+- `src/componentes/`: `Layout` (header con usuario/roles/logout + `Outlet`),
+  `MensajeError` (banner de error reutilizable) y `MapaZonas` (Leaflet:
+  polígonos por zona, tooltip con nombre y tarifa, `fitBounds` automático).
+- `src/api/errores.ts`: traduce un `AxiosError<ProblemaHttp>` a un mensaje
+  legible (prioriza `errores[]` de validación sobre `detail`). Con tests.
+- `src/tipos/roles.ts`: constantes de rol.
+- `App.tsx` con el árbol de rutas real: `/login`, `/registro` públicas;
+  `/` y `/estacionamiento` protegidas via `RutaProtegida` + `Layout`.
+- **Verificación end-to-end contra el backend real** (Colima + MySQL en
+  Docker + `servidor-estacionamiento` en perfil `dev` + `ui-web` en
+  `npm run dev`), con Playwright headless:
+  - Registro → dashboard con saldo `$ 0,00` y el polígono de la zona de
+    Tandil visible en el mapa → logout → login → dashboard de nuevo. Sin
+    errores de consola.
+  - Interceptor de refresh probado a propósito: se corrompió el
+    `accessToken` en `localStorage`, se recargó `/estacionamiento`, y la
+    app refrescó sola (un único `POST /auth/refrescar`, sin duplicarse
+    aunque dos requests pisaran el 401 casi al mismo tiempo) y se quedó en
+    el dashboard con un `accessToken` nuevo.
+  - Capturas en la sesión de trabajo (no versionadas).
+
+**Decisiones importantes tomadas / hallazgos:**
+- **La especificación original tenía mal los nombres de rol.** Decía
+  `USER`/`INSPECTOR`/`ADMINISTRADOR`, pero el backend devuelve las
+  authorities completas de Spring Security: `ROLE_USUARIO`,
+  `ROLE_INSPECTOR`, `ROLE_ADMINISTRADOR` (ver `RolNombre.java` y
+  `UsuarioPrincipal.getAuthorities()`). Se detectó probando contra el
+  backend real, no leyendo el código: `tieneRol("USER")` nunca daba `true`
+  y el usuario quedaba atascado en `Inicio`. Centralizado en
+  `src/tipos/roles.ts` para no repetir el string mal en cada lugar.
+- El saldo y la tarifa se formatean con `Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" })`
+  (`src/utils/formato.ts`), asumiendo pesos argentinos (no está en la
+  especificación, pero es lo consistente con "Tandil").
+- Verificación manual del backend hecha con un `.env` local ad-hoc en
+  `servidor-estacionamiento` (gitignorado) y `docker compose up -d mysql`
+  + `mvnw spring-boot:run` con perfil `dev`; todo se detuvo al terminar.

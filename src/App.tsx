@@ -1,19 +1,38 @@
-import { useAutenticacion } from "./contextos/useAutenticacion";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { RutaProtegida } from "./rutas/RutaProtegida";
+import { Layout } from "./componentes/Layout";
+import { Login } from "./paginas/Login";
+import { Registro } from "./paginas/Registro";
+import { Inicio } from "./paginas/Inicio";
+import { DashboardUsuario } from "./paginas/DashboardUsuario";
+import { ROL_USUARIO } from "./tipos/roles";
 
-// Placeholder de la base del proyecto (cliente HTTP, tipos, contexto de
-// autenticacion). Las paginas y el enrutado real se agregan en el siguiente modulo.
 function App() {
-  const { estaAutenticado, usuario } = useAutenticacion();
-
   return (
-    <main style={{ padding: 16 }}>
-      <h1>Estacionamiento Tandil</h1>
-      <p>
-        {estaAutenticado
-          ? `Sesion activa: ${usuario?.username} (${usuario?.roles.join(", ")})`
-          : "No hay sesion iniciada."}
-      </p>
-    </main>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/registro" element={<Registro />} />
+
+      <Route
+        element={
+          <RutaProtegida>
+            <Layout />
+          </RutaProtegida>
+        }
+      >
+        <Route path="/" element={<Inicio />} />
+        <Route
+          path="/estacionamiento"
+          element={
+            <RutaProtegida rolRequerido={ROL_USUARIO}>
+              <DashboardUsuario />
+            </RutaProtegida>
+          }
+        />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
