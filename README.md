@@ -1,4 +1,4 @@
-# ui-web
+# UI-WEB
 
 Frontend del sistema de estacionamiento medido de Tandil. Consume la API de
 `servidor-estacionamiento`. Ver `PROGRESO.md` para el registro de avance.
