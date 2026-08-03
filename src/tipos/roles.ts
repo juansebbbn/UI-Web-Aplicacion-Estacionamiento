@@ -3,3 +3,4 @@
 // AutenticacionServicio.rolesDe() y UsuarioPrincipal.getAuthorities().
 export const ROL_USUARIO = "ROLE_USUARIO";
 export const ROL_ADMINISTRADOR = "ROLE_ADMINISTRADOR";
+export const ROL_INSPECTOR = "ROLE_INSPECTOR";

@@ -104,6 +104,7 @@ export function DashboardUsuario() {
               {formatearMonto(perfil.data.saldo)}
             </span>
           )}
+          <Link to="/recargar-saldo">Recargar saldo</Link>
         </div>
 
         {sesionActiva && (

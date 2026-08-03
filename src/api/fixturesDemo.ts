@@ -6,8 +6,15 @@ import type { TipoVehiculo, VehiculoRespuesta } from "../tipos/vehiculo";
 import type { EstadoSesion, SesionRespuesta } from "../tipos/sesion";
 import type { ZonaRespuesta } from "../tipos/zona";
 import type { UsuarioAdminRespuesta, UsuarioRespuesta } from "../tipos/usuario";
+import type { MotivoReclamo, ReclamoAdminRespuesta, ReclamoRespuesta } from "../tipos/reclamo";
+import type { NotificacionRespuesta } from "../tipos/notificacion";
+import type { MultaAdminRespuesta, MultaRespuesta } from "../tipos/multa";
 import type { Pagina } from "../tipos/comun";
 import { leerSesion } from "./almacenTokens";
+
+function nombrePropio(): string {
+  return leerSesion()?.username ?? "demo";
+}
 
 // --- Estado en memoria, se reinicia con cada recarga de pagina ---
 
@@ -98,6 +105,78 @@ let otrosUsuariosDemo: UsuarioAdminRespuesta[] = [
   },
 ];
 
+let reclamosDemo: ReclamoRespuesta[] = [];
+let siguienteIdReclamo = 1;
+
+// Reclamos de otros usuarios ficticios, solo para que la tabla de
+// ADMINISTRADOR tenga mas de una fila. `let` porque el admin puede marcarlos
+// como revisados en modo demo.
+let reclamosAdminDemo: ReclamoAdminRespuesta[] = [
+  {
+    id: 1000,
+    username: "juan.perez",
+    motivo: "COBRO",
+    descripcion: "Me cobraron de mas por una sesion de 20 minutos.",
+    fechaCreacion: haceMinutos(60 * 5),
+    revisado: false,
+    respuesta: null,
+  },
+  {
+    id: 1001,
+    username: "maria.gomez",
+    motivo: "ZONA",
+    descripcion: "El cartel de la zona norte no se ve bien de noche.",
+    fechaCreacion: haceMinutos(60 * 30),
+    revisado: false,
+    respuesta: null,
+  },
+];
+
+// --- Notificaciones (propias) ---
+
+let notificacionesDemo: NotificacionRespuesta[] = [];
+let siguienteIdNotificacion = 1;
+
+function crearNotificacionDemo(descripcion: string) {
+  notificacionesDemo = [
+    { id: siguienteIdNotificacion++, descripcion, fecha: new Date().toISOString(), leida: false },
+    ...notificacionesDemo,
+  ];
+}
+
+// --- Multas ---
+// Igual que en el backend real: la multa gira en torno a la patente, no a un
+// usuario fijo. El dueño se resuelve siempre en vivo via usernamePorPatente,
+// asi que si se "transfiere" una patente en modo demo la multa sigue al
+// nuevo dueño automaticamente (nunca se guarda un username fijo por multa).
+
+let siguienteIdMulta = 2000;
+let multasDemo: MultaRespuesta[] = [
+  {
+    id: siguienteIdMulta++,
+    patente: "OTR100",
+    precio: 5000,
+    fecha: haceMinutos(60 * 24 * 3),
+    fuePagada: false,
+    fechaPago: null,
+    revocada: false,
+    razon: "Mal estacionado en zona exclusiva",
+  },
+];
+
+// patente -> username, para resolver a quien pertenece una multa. Null si la
+// patente no esta registrada por nadie todavia (multa "huerfana").
+function usernamePorPatente(patente: string): string | null {
+  if (vehiculosDemo.some((v) => v.patente === patente)) return nombrePropio();
+  const otro = otrosUsuariosDemo.find((u) => u.vehiculos.some((v) => v.patente === patente));
+  return otro?.username ?? null;
+}
+
+function multaConUsername(multa: MultaRespuesta): MultaAdminRespuesta {
+  const username = usernamePorPatente(multa.patente ?? "");
+  return { ...multa, username, vehiculoRegistrado: username !== null };
+}
+
 // Sesiones de otros usuarios ficticios, solo para que la tabla de
 // ADMINISTRADOR tenga mas de una fila y se pueda ver la paginacion.
 function sesionesAdminDemo(): SesionRespuesta[] {
@@ -155,6 +234,12 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
     const cuerpo = cuerpoDe<{ patente: string; tipo: TipoVehiculo }>(config);
     const nuevo: VehiculoRespuesta = { id: siguienteIdVehiculo++, patente: cuerpo.patente, tipo: cuerpo.tipo };
     vehiculosDemo = [...vehiculosDemo, nuevo];
+    // Igual que VehiculoControlador.registrar en el backend real: si ya
+    // habia multas huerfanas para esta patente, se vinculan solas y se avisa.
+    const huerfanas = multasDemo.filter((m) => m.patente === cuerpo.patente);
+    huerfanas.forEach((m) =>
+      crearNotificacionDemo(`Se vinculó a tu cuenta una multa existente para la patente ${m.patente}: ${m.razon} ($${m.precio})`),
+    );
     return ok(config, nuevo, 201);
   }
   const matchBajaVehiculo = /^\/vehiculos\/([^/]+)$/.exec(url);
@@ -285,6 +370,205 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
     otrosUsuariosDemo = otrosUsuariosDemo.map((u) => (u.id === id ? actualizado : u));
     const { vehiculos: _vehiculos, ...data } = actualizado;
     return ok(config, data);
+  }
+
+  if (metodo === "post" && url === "/reclamos") {
+    const cuerpo = cuerpoDe<{ motivo: MotivoReclamo; descripcion: string }>(config);
+    const nuevo: ReclamoRespuesta = {
+      id: siguienteIdReclamo++,
+      motivo: cuerpo.motivo,
+      descripcion: cuerpo.descripcion,
+      fechaCreacion: new Date().toISOString(),
+      revisado: false,
+      respuesta: null,
+    };
+    reclamosDemo = [nuevo, ...reclamosDemo];
+    return ok(config, nuevo, 201);
+  }
+  if (metodo === "get" && url === "/reclamos") {
+    return ok(config, reclamosDemo);
+  }
+  const matchEliminarReclamo = /^\/reclamos\/(\d+)$/.exec(url);
+  if (metodo === "delete" && matchEliminarReclamo) {
+    const id = Number(matchEliminarReclamo[1]);
+    if (!reclamosDemo.some((r) => r.id === id)) {
+      return Promise.reject(new Error(`Modo demo: no existe el reclamo ${id}`));
+    }
+    reclamosDemo = reclamosDemo.filter((r) => r.id !== id);
+    return ok(config, undefined, 204);
+  }
+  if (metodo === "get" && url === "/reclamos/admin") {
+    const page = Number(config.params?.page ?? 0);
+    const size = Number(config.params?.size ?? 20);
+    const sesion = leerSesion();
+    const propiosComoAdmin: ReclamoAdminRespuesta[] = reclamosDemo.map((reclamo) => ({
+      ...reclamo,
+      username: sesion?.username ?? "demo",
+    }));
+    const todos = [...propiosComoAdmin, ...reclamosAdminDemo].sort((a, b) =>
+      b.fechaCreacion.localeCompare(a.fechaCreacion),
+    );
+    const contenido = todos.slice(page * size, page * size + size);
+    const data: Pagina<ReclamoAdminRespuesta> = {
+      content: contenido,
+      totalElements: todos.length,
+      totalPages: Math.max(1, Math.ceil(todos.length / size)),
+      number: page,
+      size,
+      first: page === 0,
+      last: (page + 1) * size >= todos.length,
+    };
+    return ok(config, data);
+  }
+
+  if (metodo === "post" && url === "/usuarios/yo/saldo") {
+    const cuerpo = cuerpoDe<{ monto: number }>(config);
+    saldoDemo += cuerpo.monto;
+    const sesion = leerSesion();
+    const data: UsuarioRespuesta = {
+      id: 1,
+      username: sesion?.username ?? "demo",
+      dni: "00000000",
+      saldo: saldoDemo,
+      fechaRegistro: haceMinutos(60 * 24 * 30),
+      roles: sesion?.roles ?? [],
+    };
+    crearNotificacionDemo(`Se acreditó tu recarga de saldo por $${cuerpo.monto}.`);
+    return ok(config, data);
+  }
+
+  const matchRevisarReclamo = /^\/reclamos\/admin\/(\d+)\/revisar$/.exec(url);
+  if (metodo === "put" && matchRevisarReclamo) {
+    const id = Number(matchRevisarReclamo[1]);
+    const cuerpo = cuerpoDe<{ respuesta: string }>(config);
+
+    const propio = reclamosDemo.find((r) => r.id === id);
+    if (propio) {
+      reclamosDemo = reclamosDemo.map((r) => (r.id === id ? { ...r, revisado: true, respuesta: cuerpo.respuesta } : r));
+      crearNotificacionDemo("Tu reclamo fue contestado. Por favor, andá a la sección de Reclamos para leerlo.");
+      const actualizado: ReclamoAdminRespuesta = {
+        ...propio,
+        revisado: true,
+        respuesta: cuerpo.respuesta,
+        username: nombrePropio(),
+      };
+      return ok(config, actualizado);
+    }
+
+    const otro = reclamosAdminDemo.find((r) => r.id === id);
+    if (!otro) return Promise.reject(new Error(`Modo demo: no existe el reclamo ${id}`));
+    const actualizado: ReclamoAdminRespuesta = { ...otro, revisado: true, respuesta: cuerpo.respuesta };
+    reclamosAdminDemo = reclamosAdminDemo.map((r) => (r.id === id ? actualizado : r));
+    return ok(config, actualizado);
+  }
+
+  const matchEliminarReclamoAdmin = /^\/reclamos\/admin\/(\d+)$/.exec(url);
+  if (metodo === "delete" && matchEliminarReclamoAdmin) {
+    const id = Number(matchEliminarReclamoAdmin[1]);
+    if (reclamosDemo.some((r) => r.id === id)) {
+      reclamosDemo = reclamosDemo.filter((r) => r.id !== id);
+      return ok(config, undefined, 204);
+    }
+    if (reclamosAdminDemo.some((r) => r.id === id)) {
+      reclamosAdminDemo = reclamosAdminDemo.filter((r) => r.id !== id);
+      return ok(config, undefined, 204);
+    }
+    return Promise.reject(new Error(`Modo demo: no existe el reclamo ${id}`));
+  }
+
+  if (metodo === "get" && url === "/notificaciones") {
+    return ok(config, notificacionesDemo);
+  }
+  if (metodo === "post" && url === "/notificaciones/marcar-leidas") {
+    notificacionesDemo = notificacionesDemo.map((n) => ({ ...n, leida: true }));
+    return ok(config, undefined, 204);
+  }
+  const matchEliminarNotificacion = /^\/notificaciones\/(\d+)$/.exec(url);
+  if (metodo === "delete" && matchEliminarNotificacion) {
+    const id = Number(matchEliminarNotificacion[1]);
+    if (!notificacionesDemo.some((n) => n.id === id)) {
+      return Promise.reject(new Error(`Modo demo: no existe la notificacion ${id}`));
+    }
+    notificacionesDemo = notificacionesDemo.filter((n) => n.id !== id);
+    return ok(config, undefined, 204);
+  }
+
+  if (metodo === "get" && url === "/multas") {
+    const propias = multasDemo.filter((m) => usernamePorPatente(m.patente ?? "") === nombrePropio());
+    return ok(config, propias);
+  }
+  const matchPagarMulta = /^\/multas\/(\d+)\/pagar$/.exec(url);
+  if (metodo === "post" && matchPagarMulta) {
+    const id = Number(matchPagarMulta[1]);
+    const multa = multasDemo.find((m) => m.id === id && usernamePorPatente(m.patente ?? "") === nombrePropio());
+    if (!multa) return Promise.reject(new Error(`Modo demo: no existe la multa ${id} para vos`));
+    if (multa.revocada) return Promise.reject(new Error("La multa fue revocada, no corresponde pagarla"));
+    if (multa.fuePagada) return Promise.reject(new Error("La multa ya fue pagada"));
+    const pagada: MultaRespuesta = { ...multa, fuePagada: true, fechaPago: new Date().toISOString() };
+    multasDemo = multasDemo.map((m) => (m.id === id ? pagada : m));
+    saldoDemo -= multa.precio;
+    crearNotificacionDemo(`Se registró el pago de tu multa: ${multa.razon}`);
+    return ok(config, pagada);
+  }
+
+  if (metodo === "post" && url === "/multas/admin") {
+    const cuerpo = cuerpoDe<{ patente: string; precio: number; razon: string }>(config);
+    const patente = cuerpo.patente.toUpperCase();
+    const nueva: MultaRespuesta = {
+      id: siguienteIdMulta++,
+      precio: cuerpo.precio,
+      fecha: new Date().toISOString(),
+      fuePagada: false,
+      fechaPago: null,
+      revocada: false,
+      razon: cuerpo.razon,
+      patente,
+    };
+    multasDemo = [nueva, ...multasDemo];
+    const data = multaConUsername(nueva);
+    if (data.username === nombrePropio()) {
+      crearNotificacionDemo(`Se registró una multa a tu nombre: ${nueva.razon} ($${nueva.precio})`);
+    }
+    return ok(config, data, 201);
+  }
+
+  if (metodo === "get" && url === "/multas/admin") {
+    const patenteFiltro = (config.params?.patente as string | undefined)?.toUpperCase();
+    const usernameFiltro = config.params?.username as string | undefined;
+    const registradoFiltro = config.params?.registrado as boolean | string | undefined;
+    const registrado =
+      registradoFiltro === undefined ? undefined : registradoFiltro === true || registradoFiltro === "true";
+    const page = Number(config.params?.page ?? 0);
+    const size = Number(config.params?.size ?? 20);
+
+    const todas = multasDemo
+      .map(multaConUsername)
+      .filter((m) => !patenteFiltro || m.patente === patenteFiltro)
+      .filter((m) => !usernameFiltro || m.username === usernameFiltro)
+      .filter((m) => registrado === undefined || m.vehiculoRegistrado === registrado)
+      .sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+    const contenido = todas.slice(page * size, page * size + size);
+    const data: Pagina<MultaAdminRespuesta> = {
+      content: contenido,
+      totalElements: todas.length,
+      totalPages: Math.max(1, Math.ceil(todas.length / size)),
+      number: page,
+      size,
+      first: page === 0,
+      last: (page + 1) * size >= todas.length,
+    };
+    return ok(config, data);
+  }
+
+  const matchRevocarMulta = /^\/multas\/admin\/(\d+)\/revocar$/.exec(url);
+  if (metodo === "put" && matchRevocarMulta) {
+    const id = Number(matchRevocarMulta[1]);
+    const multa = multasDemo.find((m) => m.id === id);
+    if (!multa) return Promise.reject(new Error(`Modo demo: no existe la multa ${id}`));
+    const revocada: MultaRespuesta = { ...multa, revocada: true };
+    multasDemo = multasDemo.map((m) => (m.id === id ? revocada : m));
+    return ok(config, multaConUsername(revocada));
   }
 
   if (url.startsWith("/auth/")) {

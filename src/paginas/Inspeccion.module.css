@@ -107,3 +107,61 @@
   background: var(--color-inactivo-texto);
   color: var(--color-inactivo-fondo);
 }
+
+.botonMultar {
+  margin-top: 14px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: var(--radio-control);
+  background: var(--color-peligro);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botonMultar:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.botonMultar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.formularioMulta {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campoMulta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+}
+
+.campoMulta input {
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-borde-input);
+  border-radius: var(--radio-control);
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  text-transform: none;
+}
+
+.accionesMulta {
+  display: flex;
+  gap: 8px;
+}
+
+.botonCancelarMulta {
+  padding: 9px 18px;
+  border: 1px solid currentColor;
+  border-radius: var(--radio-control);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}

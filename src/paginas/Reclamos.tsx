@@ -1,46 +1,44 @@
 import { useState, type FormEvent } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { crearReclamo, eliminarReclamo, listarReclamosPropios } from "../api/reclamos";
+import { obtenerMensajeError } from "../api/errores";
+import { MensajeError } from "../componentes/MensajeError";
 import { useToasts } from "../contextos/contextoToasts";
 import { formatearFecha } from "../utils/formato";
+import { ETIQUETA_MOTIVO_RECLAMO, type MotivoReclamo } from "../tipos/reclamo";
 import estilos from "./Reclamos.module.css";
 
-type MotivoReclamo = "COBRO" | "ZONA" | "APP" | "OTRO";
-
-const ETIQUETA_MOTIVO: Record<MotivoReclamo, string> = {
-  COBRO: "Cobro incorrecto",
-  ZONA: "Zona / señalización",
-  APP: "Problema con la app",
-  OTRO: "Otro",
-};
-
-interface ReclamoLocal {
-  id: number;
-  motivo: MotivoReclamo;
-  descripcion: string;
-  fecha: string;
-}
-
-// Solo UI por ahora: el reclamo no viaja a ningún backend (no existe
-// todavía un endpoint para esto). Se guarda en estado local del
-// componente nada más, para poder ver el formulario funcionando — a
-// definir más adelante a dónde va este dato en producción.
 export function Reclamos() {
-  const { mostrarExito } = useToasts();
+  const queryClient = useQueryClient();
+  const { mostrarExito, mostrarError } = useToasts();
+  const reclamos = useQuery({ queryKey: ["reclamos"], queryFn: listarReclamosPropios });
+
   const [motivo, setMotivo] = useState<MotivoReclamo>("COBRO");
   const [descripcion, setDescripcion] = useState("");
-  const [enviados, setEnviados] = useState<ReclamoLocal[]>([]);
+
+  const alta = useMutation({
+    mutationFn: crearReclamo,
+    onSuccess: () => {
+      setDescripcion("");
+      setMotivo("COBRO");
+      mostrarExito("Reclamo enviado. Lo vamos a revisar.");
+      queryClient.invalidateQueries({ queryKey: ["reclamos"] });
+    },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
+  });
+
+  const eliminar = useMutation({
+    mutationFn: eliminarReclamo,
+    onSuccess: () => {
+      mostrarExito("Reclamo eliminado.");
+      queryClient.invalidateQueries({ queryKey: ["reclamos"] });
+    },
+    onError: (err) => mostrarError(obtenerMensajeError(err)),
+  });
 
   function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
-    const nuevo: ReclamoLocal = {
-      id: Date.now(),
-      motivo,
-      descripcion: descripcion.trim(),
-      fecha: new Date().toISOString(),
-    };
-    setEnviados((actuales) => [nuevo, ...actuales]);
-    setDescripcion("");
-    setMotivo("COBRO");
-    mostrarExito("Reclamo enviado. Por ahora queda solo en esta sesión, todavía no está conectado a ningún sistema.");
+    alta.mutate({ motivo, descripcion: descripcion.trim() });
   }
 
   return (
@@ -56,9 +54,9 @@ export function Reclamos() {
           <label className={estilos.campo}>
             Motivo
             <select value={motivo} onChange={(evento) => setMotivo(evento.target.value as MotivoReclamo)}>
-              {(Object.keys(ETIQUETA_MOTIVO) as MotivoReclamo[]).map((clave) => (
+              {(Object.keys(ETIQUETA_MOTIVO_RECLAMO) as MotivoReclamo[]).map((clave) => (
                 <option key={clave} value={clave}>
-                  {ETIQUETA_MOTIVO[clave]}
+                  {ETIQUETA_MOTIVO_RECLAMO[clave]}
                 </option>
               ))}
             </select>
@@ -74,27 +72,38 @@ export function Reclamos() {
               placeholder="Contanos el detalle del reclamo…"
             />
           </label>
-          <button type="submit" className={estilos.boton}>
-            Enviar reclamo
+          <button type="submit" className={estilos.boton} disabled={alta.isPending}>
+            {alta.isPending ? "Enviando..." : "Enviar reclamo"}
           </button>
         </form>
       </div>
 
-      {enviados.length > 0 && (
-        <>
-          <h3 className={estilos.tituloSeccion}>Reclamos de esta sesión</h3>
-          <ul className={estilos.lista}>
-            {enviados.map((reclamo) => (
-              <li key={reclamo.id} className={estilos.item}>
-                <div className={estilos.itemEncabezado}>
-                  <span className={estilos.insigniaMotivo}>{ETIQUETA_MOTIVO[reclamo.motivo]}</span>
-                  <span className={estilos.fecha}>{formatearFecha(reclamo.fecha)}</span>
-                </div>
-                <p className={estilos.descripcion}>{reclamo.descripcion}</p>
-              </li>
-            ))}
-          </ul>
-        </>
+      <h3 className={estilos.tituloSeccion}>Mis reclamos</h3>
+      {reclamos.isPending && <p>Cargando reclamos…</p>}
+      {reclamos.isError && <MensajeError mensaje={obtenerMensajeError(reclamos.error)} />}
+      {reclamos.data && reclamos.data.length === 0 && <p className={estilos.ayuda}>Todavía no cargaste ningún reclamo.</p>}
+
+      {reclamos.data && reclamos.data.length > 0 && (
+        <ul className={estilos.lista}>
+          {reclamos.data.map((reclamo) => (
+            <li key={reclamo.id} className={estilos.item}>
+              <div className={estilos.itemEncabezado}>
+                <span className={estilos.insigniaMotivo}>{ETIQUETA_MOTIVO_RECLAMO[reclamo.motivo]}</span>
+                <span className={estilos.fecha}>{formatearFecha(reclamo.fechaCreacion)}</span>
+              </div>
+              <p className={estilos.descripcion}>{reclamo.descripcion}</p>
+              {reclamo.respuesta && <p className={estilos.respuesta}>Respuesta: "{reclamo.respuesta}"</p>}
+              <button
+                type="button"
+                className={estilos.botonEliminar}
+                onClick={() => eliminar.mutate(reclamo.id)}
+                disabled={eliminar.isPending}
+              >
+                Eliminar
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </section>
   );

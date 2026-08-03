@@ -3,4 +3,9 @@
   min-height: 320px;
   width: 100%;
   border-radius: var(--radio-control);
+  /* Leaflet usa z-index internos de hasta 1000 (panes, controles), muy por
+     encima del sidebar (z-index 40) y su overlay (35) en mobile. Sin esto,
+     esos elementos internos se pintan por arriba del drawer del menú
+     cuando está abierto. */
+  isolation: isolate;
 }

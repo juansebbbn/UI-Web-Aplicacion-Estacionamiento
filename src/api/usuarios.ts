@@ -1,8 +1,18 @@
 import { cliente } from "./cliente";
-import type { AjusteSaldoSolicitud, UsuarioAdminRespuesta, UsuarioRespuesta } from "../tipos/usuario";
+import type {
+  AjusteSaldoSolicitud,
+  RecargaSaldoSolicitud,
+  UsuarioAdminRespuesta,
+  UsuarioRespuesta,
+} from "../tipos/usuario";
 
 export async function obtenerPerfilPropio(): Promise<UsuarioRespuesta> {
   const respuesta = await cliente.get<UsuarioRespuesta>("/usuarios/yo");
+  return respuesta.data;
+}
+
+export async function recargarSaldoPropio(datos: RecargaSaldoSolicitud): Promise<UsuarioRespuesta> {
+  const respuesta = await cliente.post<UsuarioRespuesta>("/usuarios/yo/saldo", datos);
   return respuesta.data;
 }
 

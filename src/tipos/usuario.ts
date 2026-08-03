@@ -22,3 +22,9 @@ export interface AjusteSaldoSolicitud {
   monto: number;
   motivo: string;
 }
+
+// Espeja com.tandil.estacionamiento.usuarios.dto.RecargaSaldoSolicitud.
+// Autoservicio: credito directo simulado, sin medio de pago real todavia.
+export interface RecargaSaldoSolicitud {
+  monto: number;
+}

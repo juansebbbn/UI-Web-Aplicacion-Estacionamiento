@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { activarModoDemo } from "../api/modoDemo";
-import { ROL_ADMINISTRADOR, ROL_USUARIO } from "../tipos/roles";
+import { ROL_ADMINISTRADOR, ROL_INSPECTOR, ROL_USUARIO } from "../tipos/roles";
 import estilos from "./PanelModoDemo.module.css";
 
 const ROLES_DEMO = [
   { rol: ROL_USUARIO, etiqueta: "Usuario" },
+  { rol: ROL_INSPECTOR, etiqueta: "Inspector" },
   { rol: ROL_ADMINISTRADOR, etiqueta: "Administrador" },
 ];
 
