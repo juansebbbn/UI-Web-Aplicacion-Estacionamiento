@@ -13,7 +13,9 @@ import estilos from "./Lineas.module.css";
 // ver src/data/lineas.ts) — no hay fetch a ningun backend.
 export function Lineas() {
   const { estaAutenticado } = useAutenticacion();
-  const [seleccionada, setSeleccionada] = useState<LineaColectivo | null>(null);
+  // Arranca con la primera línea ya abierta (no hay ninguna razón para
+  // obligar a elegir si hay al menos una cargada).
+  const [seleccionada, setSeleccionada] = useState<LineaColectivo | null>(LINEAS_COLECTIVO[0] ?? null);
 
   return (
     <div>

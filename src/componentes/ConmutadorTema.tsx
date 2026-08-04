@@ -43,6 +43,12 @@ const ICONO: Record<Tema, ComponentType> = {
   oscuro: IconoOscuro,
 };
 
+// Se quitó la opción "Sistema" del control (a pedido): sigue existiendo como
+// estado interno posible en useTema (el visitante que nunca elige nada sigue
+// siguiendo prefers-color-scheme via CSS, ver index.css), pero ya no se puede
+// volver a ella a mano una vez que se elige Claro u Oscuro.
+const OPCIONES_VISIBLES: Tema[] = ["claro", "oscuro"];
+
 interface ConmutadorTemaProps {
   // "flotante" (default): pill fija abajo a la derecha, para paginas sin
   // Layout (login/registro/lineas, ver LayoutPublico en App.tsx).
@@ -60,7 +66,7 @@ export function ConmutadorTema({ variante = "flotante" }: ConmutadorTemaProps) {
 
   return (
     <div className={claseGrupo} role="radiogroup" aria-label="Tema de la aplicación">
-      {(Object.keys(ETIQUETA) as Tema[]).map((opcion) => {
+      {OPCIONES_VISIBLES.map((opcion) => {
         const Icono = ICONO[opcion];
         const activo = tema === opcion;
         return (

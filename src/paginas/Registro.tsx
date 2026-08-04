@@ -32,8 +32,8 @@ export function Registro() {
     <div className={estilos.pagina}>
       <div className={estilos.contenedor}>
         <div className={estilos.marca}>
-          <span className={estilos.logo}>P</span>
-          <span className={estilos.nombreApp}>Estacionamiento Tandil</span>
+          <span className={estilos.logo}>G</span>
+          <span className={estilos.nombreApp}>Gestión Tandil</span>
         </div>
         <div className={estilos.tarjeta}>
           <h1 className={estilos.titulo}>Crear cuenta</h1>

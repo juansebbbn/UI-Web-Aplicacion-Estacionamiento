@@ -250,9 +250,19 @@
 }
 
 .roles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
   font-size: 0.75rem;
   color: var(--color-texto-secundario);
   text-transform: capitalize;
+}
+
+.rolChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .botonSalir {

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, Polyline, TileLayer, useMap } from "react-leaflet";
 import type { LatLngBoundsExpression, LatLngTuple } from "leaflet";
 import type { Coordenada } from "../tipos/comun";
+import { ColectivosAnimados } from "./ColectivosAnimados";
 import estilos from "./MapaRecorrido.module.css";
 
 const CENTRO_TANDIL: LatLngTuple = [-37.3217, -59.1332];
@@ -37,6 +38,7 @@ export function MapaRecorrido({ puntos, color }: MapaRecorridoProps) {
         positions={puntos.map((punto): LatLngTuple => [punto.latitud, punto.longitud])}
         pathOptions={{ color, weight: 5 }}
       />
+      <ColectivosAnimados puntos={puntos} color={color} />
     </MapContainer>
   );
 }

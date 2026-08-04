@@ -242,6 +242,11 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
     );
     return ok(config, nuevo, 201);
   }
+  const matchDocumentacionVehiculo = /^\/vehiculos\/([^/]+)\/documentacion$/.exec(url);
+  if (metodo === "post" && matchDocumentacionVehiculo) {
+    // Igual que el backend real: los archivos se reciben y no se hace nada con ellos.
+    return ok(config, undefined, 204);
+  }
   const matchBajaVehiculo = /^\/vehiculos\/([^/]+)$/.exec(url);
   if (metodo === "delete" && matchBajaVehiculo) {
     const patente = decodeURIComponent(matchBajaVehiculo[1]);
@@ -302,7 +307,20 @@ export const adaptadorDemo: AxiosAdapter = async (config) => {
     return ok(config, finalizada);
   }
   if (metodo === "get" && url === "/sesiones") {
-    return ok(config, sesionesDemo);
+    const page = Number(config.params?.page ?? 0);
+    const size = Number(config.params?.size ?? 20);
+    const propias = [...sesionesDemo].sort((a, b) => b.horaInicio.localeCompare(a.horaInicio));
+    const contenido = propias.slice(page * size, page * size + size);
+    const data: Pagina<SesionRespuesta> = {
+      content: contenido,
+      totalElements: propias.length,
+      totalPages: Math.max(1, Math.ceil(propias.length / size)),
+      number: page,
+      size,
+      first: page === 0,
+      last: (page + 1) * size >= propias.length,
+    };
+    return ok(config, data);
   }
   const matchInspeccion = /^\/sesiones\/inspeccion\/([^/]+)$/.exec(url);
   if (metodo === "get" && matchInspeccion) {

@@ -16,19 +16,43 @@ import { useToasts } from "../contextos/contextoToasts";
 import { formatearDuracion, formatearFecha, formatearMonto } from "../utils/formato";
 import { useTiempoTranscurrido } from "../utils/useTiempoTranscurrido";
 import type { Coordenada } from "../tipos/comun";
+import type { ZonaRespuesta } from "../tipos/zona";
 import estilos from "./DashboardUsuario.module.css";
+
+// Punto representativo de la zona para no obligar al usuario a tocar el mapa
+// o compartir su ubicación: el promedio de los vertices cae dentro del
+// polígono para las zonas de esta app (todas convexas, ver V3__sembrar_zona_tandil.sql
+// y las sembradas en V6). El backend igual vuelve a verificar con el
+// point-in-polygon real (ver ZonaEstacionamiento.contiene).
+function centroideDeZona(zona: ZonaRespuesta): Coordenada {
+  const cantidad = zona.vertices.length;
+  const suma = zona.vertices.reduce(
+    (acumulado, vertice) => ({
+      latitud: acumulado.latitud + vertice.latitud,
+      longitud: acumulado.longitud + vertice.longitud,
+    }),
+    { latitud: 0, longitud: 0 },
+  );
+  return { latitud: suma.latitud / cantidad, longitud: suma.longitud / cantidad };
+}
 
 export function DashboardUsuario() {
   const queryClient = useQueryClient();
   const { mostrarExito, mostrarError } = useToasts();
   const perfil = useQuery({ queryKey: ["perfil"], queryFn: obtenerPerfilPropio });
   const zonas = useQuery({ queryKey: ["zonas"], queryFn: listarZonas });
-  const sesiones = useQuery({ queryKey: ["sesiones"], queryFn: listarSesionesPropias });
+  // size grande (no paginado en la UI): esta pantalla solo necesita encontrar
+  // la sesion activa, si existe — la paginacion de a 10 es para Historial.tsx.
+  const sesiones = useQuery({
+    queryKey: ["sesiones", "activa"],
+    queryFn: () => listarSesionesPropias({ size: 50, sort: "horaInicio,desc" }),
+  });
   const vehiculos = useQuery({ queryKey: ["vehiculos"], queryFn: listarVehiculosPropios });
 
-  const sesionActiva = sesiones.data?.find((sesion) => sesion.estado === "ACTIVA") ?? null;
+  const sesionActiva = sesiones.data?.content.find((sesion) => sesion.estado === "ACTIVA") ?? null;
 
   const [patenteSeleccionada, setPatenteSeleccionada] = useState("");
+  const [zonaSeleccionada, setZonaSeleccionada] = useState("");
   const [coordenadaSeleccionada, setCoordenadaSeleccionada] = useState<Coordenada | null>(null);
 
   // Siempre se llama (regla de los hooks): sin sesion activa, el resultado
@@ -48,6 +72,7 @@ export function DashboardUsuario() {
     mutationFn: iniciarSesionEstacionamiento,
     onSuccess: () => {
       setCoordenadaSeleccionada(null);
+      setZonaSeleccionada("");
       mostrarExito("Sesión de estacionamiento iniciada.");
       queryClient.invalidateQueries({ queryKey: ["sesiones"] });
     },
@@ -80,10 +105,26 @@ export function DashboardUsuario() {
     }
     navigator.geolocation.getCurrentPosition(
       (posicion) => {
+        setZonaSeleccionada("");
         setCoordenadaSeleccionada({ latitud: posicion.coords.latitude, longitud: posicion.coords.longitude });
       },
       () => mostrarError("No se pudo obtener tu ubicación."),
     );
+  }
+
+  function manejarSeleccionZona(idZona: string) {
+    setZonaSeleccionada(idZona);
+    if (!idZona) {
+      setCoordenadaSeleccionada(null);
+      return;
+    }
+    const zona = zonas.data?.find((z) => String(z.id) === idZona);
+    if (zona) setCoordenadaSeleccionada(centroideDeZona(zona));
+  }
+
+  function manejarClickMapa(coordenada: Coordenada) {
+    setZonaSeleccionada("");
+    setCoordenadaSeleccionada(coordenada);
   }
 
   return (
@@ -176,13 +217,30 @@ export function DashboardUsuario() {
                   ))}
                 </select>
               </label>
+              <label className={estilos.campo}>
+                Zona
+                <select
+                  value={zonaSeleccionada}
+                  onChange={(evento) => manejarSeleccionZona(evento.target.value)}
+                  disabled={!zonas.data || zonas.data.length === 0}
+                >
+                  <option value="">Elegí una zona</option>
+                  {zonas.data?.map((zona) => (
+                    <option key={zona.id} value={zona.id}>
+                      {zona.nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
               <button type="button" className={estilos.botonSecundario} onClick={usarMiUbicacion}>
                 Usar mi ubicación
               </button>
             </div>
           )}
 
-          <p className={estilos.ayuda}>Tocá el mapa donde estacionaste para elegir el lugar.</p>
+          <p className={estilos.ayuda}>
+            Elegí una zona de la lista, usá tu ubicación, o tocá el mapa donde estacionaste.
+          </p>
 
           {coordenadaSeleccionada && (
             <p className={estilos.mensajeVerificacion}>
@@ -217,7 +275,7 @@ export function DashboardUsuario() {
           <MapaZonas
             zonas={zonas.data}
             marcador={!sesionActiva ? coordenadaSeleccionada : null}
-            onClickMapa={!sesionActiva ? setCoordenadaSeleccionada : undefined}
+            onClickMapa={!sesionActiva ? manejarClickMapa : undefined}
           />
         </div>
       )}

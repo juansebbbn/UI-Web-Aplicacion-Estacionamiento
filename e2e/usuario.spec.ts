@@ -22,6 +22,15 @@ test.describe("Flujo USUARIO (modo demo)", () => {
     await expect(page).toHaveURL(/\/vehiculos$/);
 
     await page.getByLabel("Patente").fill("E2E1234");
+    await page
+      .getByLabel("Tarjeta verde o azul")
+      .setInputFiles({ name: "tarjeta.jpg", mimeType: "image/jpeg", buffer: Buffer.from("tarjeta") });
+    await page
+      .getByLabel("DNI")
+      .setInputFiles({ name: "dni.jpg", mimeType: "image/jpeg", buffer: Buffer.from("dni") });
+    await page
+      .getByLabel("Foto delantera del auto")
+      .setInputFiles({ name: "auto.jpg", mimeType: "image/jpeg", buffer: Buffer.from("auto") });
     await page.getByRole("button", { name: "Agregar vehículo" }).click();
 
     await expect(page.getByText("Vehículo E2E1234 agregado.")).toBeVisible();

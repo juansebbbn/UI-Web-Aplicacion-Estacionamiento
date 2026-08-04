@@ -12,8 +12,8 @@ export async function finalizarSesionEstacionamiento(id: number): Promise<Sesion
   return respuesta.data;
 }
 
-export async function listarSesionesPropias(): Promise<SesionRespuesta[]> {
-  const respuesta = await cliente.get<SesionRespuesta[]>("/sesiones");
+export async function listarSesionesPropias(parametros: ParametrosPaginacion = {}): Promise<Pagina<SesionRespuesta>> {
+  const respuesta = await cliente.get<Pagina<SesionRespuesta>>("/sesiones", { params: parametros });
   return respuesta.data;
 }
 

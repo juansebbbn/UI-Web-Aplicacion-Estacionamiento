@@ -21,6 +21,13 @@ export interface LineaColectivo {
 // cerca del centro de Tandil para poder mostrar la funcionalidad en el
 // mapa. No son un relevamiento real de los recorridos: reemplazar por
 // trazas GPS reales cuando existan.
+//
+// Todos los `recorrido` son circuitos CERRADOS (el último punto coincide
+// con el primero): un colectivo real no llega a una "parada final" y se
+// detiene, da la vuelta por una calle paralela y repite el circuito sin
+// fin. Eso es lo que anima <ColectivosAnimados> sobre <MapaRecorrido> — ver
+// src/componentes/ColectivosAnimados.tsx. Si se agrega una línea nueva, su
+// `recorrido` tiene que cerrar de la misma forma (primer punto == último).
 export const LINEAS_COLECTIVO: LineaColectivo[] = [
   {
     numero: 500,
@@ -33,6 +40,12 @@ export const LINEAS_COLECTIVO: LineaColectivo[] = [
       { latitud: -37.3217, longitud: -59.1332 },
       { latitud: -37.314, longitud: -59.128 },
       { latitud: -37.308, longitud: -59.123 },
+      // vuelta, por una traza paralela desplazada
+      { latitud: -37.308, longitud: -59.118 },
+      { latitud: -37.3157, longitud: -59.1232 },
+      { latitud: -37.323, longitud: -59.129 },
+      { latitud: -37.33, longitud: -59.136 },
+      { latitud: -37.341, longitud: -59.152 },
     ],
   },
   {
@@ -44,6 +57,10 @@ export const LINEAS_COLECTIVO: LineaColectivo[] = [
       { latitud: -37.33, longitud: -59.16 },
       { latitud: -37.326, longitud: -59.145 },
       { latitud: -37.3217, longitud: -59.1332 },
+      // vuelta, por una traza paralela desplazada
+      { latitud: -37.319, longitud: -59.136 },
+      { latitud: -37.323, longitud: -59.151 },
+      { latitud: -37.333, longitud: -59.175 },
     ],
   },
   {
@@ -57,6 +74,12 @@ export const LINEAS_COLECTIVO: LineaColectivo[] = [
       { latitud: -37.329, longitud: -59.139 },
       { latitud: -37.336, longitud: -59.146 },
       { latitud: -37.341, longitud: -59.152 },
+      // vuelta, por una traza paralela desplazada
+      { latitud: -37.342, longitud: -59.155 },
+      { latitud: -37.335, longitud: -59.148 },
+      { latitud: -37.3277, longitud: -59.1422 },
+      { latitud: -37.325, longitud: -59.136 },
+      { latitud: -37.315, longitud: -59.121 },
     ],
   },
   {
@@ -68,6 +91,10 @@ export const LINEAS_COLECTIVO: LineaColectivo[] = [
       { latitud: -37.311, longitud: -59.141 },
       { latitud: -37.317, longitud: -59.137 },
       { latitud: -37.3217, longitud: -59.1332 },
+      // vuelta, por una traza paralela desplazada
+      { latitud: -37.309, longitud: -59.144 },
+      { latitud: -37.303, longitud: -59.148 },
+      { latitud: -37.305, longitud: -59.145 },
     ],
   },
   {
@@ -80,6 +107,11 @@ export const LINEAS_COLECTIVO: LineaColectivo[] = [
       { latitud: -37.316, longitud: -59.128 },
       { latitud: -37.309, longitud: -59.119 },
       { latitud: -37.304, longitud: -59.112 },
+      // vuelta, por una traza paralela desplazada
+      { latitud: -37.316, longitud: -59.111 },
+      { latitud: -37.323, longitud: -59.12 },
+      { latitud: -37.3287, longitud: -59.1252 },
+      { latitud: -37.329, longitud: -59.139 },
     ],
   },
   {

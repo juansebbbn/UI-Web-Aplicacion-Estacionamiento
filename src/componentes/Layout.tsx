@@ -179,6 +179,42 @@ function IconoMetricas() {
   );
 }
 
+// Iconos de rol para el pie de la sidebar (ver usuarioInfo): uno por cada
+// rol que tenga el usuario, no solo el "principal" (una cuenta puede tener
+// mas de uno, ej. ADMINISTRADOR + INSPECTOR).
+function IconoRolUsuario() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-3.9 3.6-7 8-7s8 3.1 8 7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoRolAdministrador() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <path d="M12 3l7 3v5c0 4.8-3 8.4-7 10-4-1.6-7-5.2-7-10V6Z" strokeLinejoin="round" />
+      <path d="m9 12 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconoRolInspector() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m20 20-4.35-4.35" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconoDeRol({ rol }: { rol: string }) {
+  if (rol === ROL_ADMINISTRADOR) return <IconoRolAdministrador />;
+  if (rol === ROL_INSPECTOR) return <IconoRolInspector />;
+  return <IconoRolUsuario />;
+}
+
 export function Layout() {
   const { usuario, tieneRol, cerrarSesion } = useAutenticacion();
   const navegar = useNavigate();
@@ -232,8 +268,8 @@ export function Layout() {
       <div className={estilos.app}>
         <aside className={menuAbierto ? `${estilos.sidebar} ${estilos.sidebarAbierto}` : estilos.sidebar}>
           <Link to="/" className={estilos.marca} onClick={cerrarMenu}>
-            <span className={estilos.logo}>P</span>
-            <span className={estilos.titulo}>Estacionamiento Tandil</span>
+            <span className={estilos.logo}>G</span>
+            <span className={estilos.titulo}>Gestión Tandil</span>
           </Link>
           <nav className={estilos.navegacion}>
             {tieneRol(ROL_USUARIO) && (
@@ -308,7 +344,12 @@ export function Layout() {
             <div className={estilos.usuarioInfo}>
               <span className={estilos.usuarioNombre}>{usuario?.username}</span>
               <span className={estilos.roles}>
-                {usuario?.roles.map((rol) => rol.replace("ROLE_", "")).join(" · ")}
+                {usuario?.roles.map((rol) => (
+                  <span key={rol} className={estilos.rolChip}>
+                    <IconoDeRol rol={rol} />
+                    {rol.replace("ROLE_", "")}
+                  </span>
+                ))}
               </span>
             </div>
             <button type="button" className={estilos.botonSalir} onClick={manejarCerrarSesion}>

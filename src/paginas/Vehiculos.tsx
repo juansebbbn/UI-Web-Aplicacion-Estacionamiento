@@ -1,11 +1,20 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { darDeAltaVehiculo, eliminarVehiculo, listarVehiculosPropios } from "../api/vehiculos";
+import {
+  darDeAltaVehiculo,
+  eliminarVehiculo,
+  listarVehiculosPropios,
+  subirDocumentacionVehiculo,
+} from "../api/vehiculos";
 import { obtenerMensajeError } from "../api/errores";
 import { MensajeError } from "../componentes/MensajeError";
 import { useToasts } from "../contextos/contextoToasts";
 import type { TipoVehiculo } from "../tipos/vehiculo";
 import estilos from "./Vehiculos.module.css";
+
+// Cuanto se queda visible el panel "Aprobado" antes de volver a mostrar el
+// formulario vacío, listo para cargar otro vehículo.
+const DURACION_APROBADO_MS = 2500;
 
 function IconoVehiculo({ tipo }: { tipo: TipoVehiculo }) {
   if (tipo === "MOTO") {
@@ -38,16 +47,47 @@ export function Vehiculos() {
 
   const [patente, setPatente] = useState("");
   const [tipo, setTipo] = useState<TipoVehiculo>("AUTO");
+  const [tarjetaVehiculo, setTarjetaVehiculo] = useState<File | null>(null);
+  const [dni, setDni] = useState<File | null>(null);
+  const [fotoFrente, setFotoFrente] = useState<File | null>(null);
+  const [aprobado, setAprobado] = useState(false);
 
   const alta = useMutation({
-    mutationFn: darDeAltaVehiculo,
+    // Dos pasos: el alta en si (JSON, como antes) y despues la documentacion
+    // (multipart) contra la patente recien creada — recien ahi existe el
+    // vehiculo al que asociar los archivos. El backend no hace nada con ellos
+    // todavia (ver VehiculoControlador.subirDocumentacion): esto es solo para
+    // que la UI muestre el flujo de "enviando" -> "aprobado".
+    mutationFn: async () => {
+      const vehiculo = await darDeAltaVehiculo({ patente: patente.toUpperCase(), tipo });
+      await subirDocumentacionVehiculo(vehiculo.patente, {
+        tarjetaVehiculo: tarjetaVehiculo as File,
+        dni: dni as File,
+        fotoFrente: fotoFrente as File,
+      });
+      return vehiculo;
+    },
     onSuccess: (vehiculo) => {
-      setPatente("");
       mostrarExito(`Vehículo ${vehiculo.patente} agregado.`);
       queryClient.invalidateQueries({ queryKey: ["vehiculos"] });
+      setAprobado(true);
     },
     onError: (err) => mostrarError(obtenerMensajeError(err)),
   });
+
+  // Vuelve al formulario vacío despues de mostrar "Aprobado" un rato.
+  useEffect(() => {
+    if (!aprobado) return;
+    const id = setTimeout(() => {
+      setAprobado(false);
+      setPatente("");
+      setTipo("AUTO");
+      setTarjetaVehiculo(null);
+      setDni(null);
+      setFotoFrente(null);
+    }, DURACION_APROBADO_MS);
+    return () => clearTimeout(id);
+  }, [aprobado]);
 
   const baja = useMutation({
     mutationFn: eliminarVehiculo,
@@ -60,7 +100,12 @@ export function Vehiculos() {
 
   function manejarAlta(evento: FormEvent) {
     evento.preventDefault();
-    alta.mutate({ patente: patente.toUpperCase(), tipo });
+    if (!tarjetaVehiculo || !dni || !fotoFrente) return;
+    alta.mutate();
+  }
+
+  function manejarArchivo(setter: (archivo: File | null) => void) {
+    return (evento: ChangeEvent<HTMLInputElement>) => setter(evento.target.files?.[0] ?? null);
   }
 
   return (
@@ -69,28 +114,76 @@ export function Vehiculos() {
 
       <div className={estilos.tarjetaFormulario}>
         <h3 className={estilos.tituloTarjeta}>Agregar vehículo</h3>
-        <form className={estilos.formulario} onSubmit={manejarAlta}>
-          <label className={estilos.campo}>
-            Patente
-            <input
-              value={patente}
-              onChange={(evento) => setPatente(evento.target.value)}
-              required
-              pattern="[A-Za-z0-9]{6,10}"
-              title="Entre 6 y 10 caracteres alfanuméricos"
-            />
-          </label>
-          <label className={estilos.campo}>
-            Tipo
-            <select value={tipo} onChange={(evento) => setTipo(evento.target.value as TipoVehiculo)}>
-              <option value="AUTO">Auto</option>
-              <option value="MOTO">Moto</option>
-            </select>
-          </label>
-          <button type="submit" className={estilos.botonAgregar} disabled={alta.isPending}>
-            {alta.isPending ? "Agregando..." : "Agregar vehículo"}
-          </button>
-        </form>
+
+        {aprobado ? (
+          <div className={estilos.panelAprobado}>
+            <span className={estilos.iconoAprobado} aria-hidden="true">
+              ✓
+            </span>
+            <p>Documentación aprobada. Vehículo agregado correctamente.</p>
+          </div>
+        ) : (
+          <form className={estilos.formulario} onSubmit={manejarAlta}>
+            <label className={estilos.campo}>
+              Patente
+              <input
+                value={patente}
+                onChange={(evento) => setPatente(evento.target.value)}
+                required
+                pattern="[A-Za-z0-9]{6,10}"
+                title="Entre 6 y 10 caracteres alfanuméricos"
+                disabled={alta.isPending}
+              />
+            </label>
+            <label className={estilos.campo}>
+              Tipo
+              <select
+                value={tipo}
+                onChange={(evento) => setTipo(evento.target.value as TipoVehiculo)}
+                disabled={alta.isPending}
+              >
+                <option value="AUTO">Auto</option>
+                <option value="MOTO">Moto</option>
+              </select>
+            </label>
+            <div className={estilos.camposArchivo}>
+              <label className={estilos.campo}>
+                Tarjeta verde o azul
+                <input
+                  type="file"
+                  accept="image/*"
+                  required
+                  disabled={alta.isPending}
+                  onChange={manejarArchivo(setTarjetaVehiculo)}
+                />
+              </label>
+              <label className={estilos.campo}>
+                DNI
+                <input
+                  type="file"
+                  accept="image/*"
+                  required
+                  disabled={alta.isPending}
+                  onChange={manejarArchivo(setDni)}
+                />
+              </label>
+              <label className={estilos.campo}>
+                Foto delantera del auto
+                <input
+                  type="file"
+                  accept="image/*"
+                  required
+                  disabled={alta.isPending}
+                  onChange={manejarArchivo(setFotoFrente)}
+                />
+              </label>
+            </div>
+            <button type="submit" className={estilos.botonAgregar} disabled={alta.isPending}>
+              {alta.isPending && <span className={estilos.spinner} aria-hidden="true" />}
+              {alta.isPending ? "Enviando documentación..." : "Agregar vehículo"}
+            </button>
+          </form>
+        )}
       </div>
 
       {vehiculos.isPending && <p>Cargando vehículos…</p>}
