@@ -5,6 +5,7 @@ import { ConmutadorTema } from "./componentes/ConmutadorTema";
 import { EnvoltorioLineas } from "./componentes/EnvoltorioLineas";
 import { Login } from "./paginas/Login";
 import { Registro } from "./paginas/Registro";
+import { RegistroPrivilegiado } from "./paginas/RegistroPrivilegiado";
 import { Inicio } from "./paginas/Inicio";
 import { DashboardUsuario } from "./paginas/DashboardUsuario";
 import { RecargarSaldo } from "./paginas/RecargarSaldo";
@@ -40,6 +41,7 @@ function App() {
       <Route element={<LayoutPublico />}>
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
+        <Route path="/registro-privilegiado" element={<RegistroPrivilegiado />} />
       </Route>
 
       <Route element={<EnvoltorioLineas />}>

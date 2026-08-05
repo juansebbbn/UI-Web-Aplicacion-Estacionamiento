@@ -3,15 +3,22 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAutenticacion } from "../contextos/useAutenticacion";
 import { useToasts } from "../contextos/contextoToasts";
 import { obtenerMensajeError } from "../api/errores";
+import { registrarAdministrador, registrarInspector } from "../api/auth";
 import estilos from "./FormularioAuth.module.css";
+import estilosPropios from "./RegistroPrivilegiado.module.css";
 
-export function Registro() {
-  const { estaAutenticado, registrarse, cargando } = useAutenticacion();
+type RolPrivilegiado = "ADMINISTRADOR" | "INSPECTOR";
+
+export function RegistroPrivilegiado() {
+  const { estaAutenticado } = useAutenticacion();
   const { mostrarExito, mostrarError } = useToasts();
   const navegar = useNavigate();
+  const [rol, setRol] = useState<RolPrivilegiado>("ADMINISTRADOR");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [dni, setDni] = useState("");
+  const [clave, setClave] = useState("");
+  const [cargando, setCargando] = useState(false);
 
   if (estaAutenticado) {
     return <Navigate to="/" replace />;
@@ -19,12 +26,16 @@ export function Registro() {
 
   async function manejarEnvio(evento: FormEvent) {
     evento.preventDefault();
+    setCargando(true);
     try {
-      await registrarse({ username, password, dni });
-      mostrarExito(`¡Cuenta creada! Bienvenido/a, ${username}.`);
+      const datos = { username, password, dni, clave };
+      const token = rol === "ADMINISTRADOR" ? await registrarAdministrador(datos) : await registrarInspector(datos);
+      mostrarExito(`Cuenta ${rol === "ADMINISTRADOR" ? "administrador" : "inspector"} creada. Bienvenido/a, ${token.username}.`);
       navegar("/", { replace: true });
     } catch (err) {
       mostrarError(obtenerMensajeError(err));
+    } finally {
+      setCargando(false);
     }
   }
 
@@ -36,8 +47,28 @@ export function Registro() {
           <span className={estilos.nombreApp}>Gestión Tandil</span>
         </div>
         <div className={estilos.tarjeta}>
-          <h1 className={estilos.titulo}>Crear cuenta</h1>
+          <h1 className={estilos.titulo}>Crear cuenta privilegiada</h1>
           <form className={estilos.formulario} onSubmit={manejarEnvio}>
+            <div className={estilosPropios.selectorRol}>
+              <label className={estilosPropios.opcionRol}>
+                <input
+                  type="radio"
+                  name="rol"
+                  checked={rol === "ADMINISTRADOR"}
+                  onChange={() => setRol("ADMINISTRADOR")}
+                />
+                Administrador
+              </label>
+              <label className={estilosPropios.opcionRol}>
+                <input
+                  type="radio"
+                  name="rol"
+                  checked={rol === "INSPECTOR"}
+                  onChange={() => setRol("INSPECTOR")}
+                />
+                Inspector
+              </label>
+            </div>
             <label className={estilos.campo}>
               Usuario
               <input
@@ -71,15 +102,25 @@ export function Registro() {
                 inputMode="numeric"
               />
             </label>
+            <label className={estilos.campo}>
+              Clave de registro privilegiado
+              <input
+                type="password"
+                value={clave}
+                onChange={(evento) => setClave(evento.target.value)}
+                required
+                autoComplete="off"
+              />
+            </label>
             <button type="submit" className={estilos.enviar} disabled={cargando}>
               {cargando ? "Creando cuenta..." : "Crear cuenta"}
             </button>
           </form>
-          <p className={estilos.enlaceAlternativo}>
-            ¿Ya tenés cuenta? <Link to="/login">Iniciá sesión</Link>
+          <p className={estilosPropios.ayuda}>
+            La clave la provee quien administra el sistema; no es la contraseña de la cuenta.
           </p>
           <p className={estilos.enlaceAlternativo}>
-            ¿Sos administrador o inspector? <Link to="/registro-privilegiado">Crear cuenta con clave</Link>
+            <Link to="/login">Volver a iniciar sesión</Link>
           </p>
         </div>
       </div>

@@ -1,9 +1,21 @@
 import { cliente } from "./cliente";
 import { guardarSesion, limpiarSesion, leerSesion } from "./almacenTokens";
-import type { LoginSolicitud, RegistroSolicitud, TokenRespuesta } from "../tipos/autenticacion";
+import type { LoginSolicitud, RegistroPrivilegiadoSolicitud, RegistroSolicitud, TokenRespuesta } from "../tipos/autenticacion";
 
 export async function registrarse(datos: RegistroSolicitud): Promise<TokenRespuesta> {
   const respuesta = await cliente.post<TokenRespuesta>("/auth/registro", datos);
+  guardarSesion(respuesta.data);
+  return respuesta.data;
+}
+
+export async function registrarAdministrador(datos: RegistroPrivilegiadoSolicitud): Promise<TokenRespuesta> {
+  const respuesta = await cliente.post<TokenRespuesta>("/auth/registro-admin", datos);
+  guardarSesion(respuesta.data);
+  return respuesta.data;
+}
+
+export async function registrarInspector(datos: RegistroPrivilegiadoSolicitud): Promise<TokenRespuesta> {
+  const respuesta = await cliente.post<TokenRespuesta>("/auth/registro-inspector", datos);
   guardarSesion(respuesta.data);
   return respuesta.data;
 }

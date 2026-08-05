@@ -1,0 +1,23 @@
+.selectorRol {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
+}
+
+.opcionRol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.opcionRol input {
+  cursor: pointer;
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-texto-secundario);
+}

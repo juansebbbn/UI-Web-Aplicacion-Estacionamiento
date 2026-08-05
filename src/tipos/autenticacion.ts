@@ -6,6 +6,14 @@ export interface RegistroSolicitud {
   dni: string;
 }
 
+// Igual a RegistroSolicitud + la clave de /auth/registro-admin y /auth/registro-inspector.
+export interface RegistroPrivilegiadoSolicitud {
+  username: string;
+  password: string;
+  dni: string;
+  clave: string;
+}
+
 export interface LoginSolicitud {
   username: string;
   password: string;
